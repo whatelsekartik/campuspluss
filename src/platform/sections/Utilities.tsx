@@ -3,7 +3,6 @@ import { CinematicPhoto } from "../components/CinematicPhoto";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { Icon, type IconName } from "../components/Icon";
 import { IMG } from "../data";
-import { Kinetic } from "../components/Kinetic";
 
 /* Small UI fragments that echo Campus+ cards (demonstration content). */
 function Fragment({ icon, kicker, title, meta }: { icon: IconName; kicker: string; title: string; meta: string }) {
@@ -63,7 +62,7 @@ function Housing() {
         {/* the word slides across the photograph's edge as the image travels the other way */}
         <div className="px relative mt-6" style={{ ["--sx" as string]: "-90px" }}>
           <h3 className="display text-[20vw] lg:-ml-[22%] lg:text-[12vw]" data-reveal-group>
-            <span className="line-mask"><span><Kinetic text="Housing" /></span></span>
+            <span className="line-mask"><span>Housing</span></span>
           </h3>
         </div>
         <p className="mt-6 max-w-md text-[15px] leading-[1.6] text-stone" data-reveal>
@@ -85,13 +84,13 @@ function Rides() {
         <p className="caption hidden max-w-[16rem] text-right text-stone sm:block">Share the trip, and the cost, with people heading the same way.</p>
       </div>
       <div
-        data-sheen
         className="relative mt-6 overflow-hidden rounded-[6px]"
         style={{
           ["--r" as string]: "clamp(0, calc((var(--p) - 0.05) / 0.3), 1)",
           clipPath: "inset(calc((1 - var(--r)) * 16%) calc((1 - var(--r)) * 11%) round 6px)",
         }}
       >
+        <div data-sheen className="relative">
         <CinematicPhoto
           img={IMG.bicycle}
           scene="inherit"
@@ -103,13 +102,11 @@ function Rides() {
           widths={[800, 1280, 1800]}
           frameClassName="max-sm:!aspect-[4/3]"
         />
+        </div>
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(21,19,15,.55),transparent_60%)]" />
         {/* type rides against the pan, so word and photograph cross each other */}
         <p className="display px absolute bottom-[6%] left-[4%] whitespace-nowrap text-[22vw] text-ivory lg:text-[14vw]" style={{ ["--sx" as string]: "14vw" }}>
-          <span data-magnet="60" className="inline-block">
-            <Kinetic text="Rides" />
-          </span>
-          <span className="serif-accent text-[0.45em]"> home</span>
+          Rides          <span className="serif-accent text-[0.45em]"> home</span>
         </p>
       </div>
       <div className="px relative z-10 -mt-10 flex justify-end pr-4 lg:-mt-16 lg:pr-[6%]" style={{ ["--sy" as string]: "-70px" }}>
@@ -211,7 +208,7 @@ function GigsProjects() {
                 className="display px absolute -bottom-[0.18em] right-0 text-[22vw] text-ivory mix-blend-difference lg:text-[9vw]"
                 style={{ ["--sy" as string]: "-90px", ["--sx" as string]: i === 0 ? "40px" : "-40px" }}
               >
-                <Kinetic text={it.t} />
+                {it.t}
               </h3>
             </CinematicPhoto>
             <div data-reveal style={{ ["--rd" as string]: "120ms" }}>
@@ -245,8 +242,8 @@ function Notices() {
       <div className="lg:col-span-4">
         <Index n="06.6" label="Events & notices" />
         <h3 className="display mt-6 text-[18vw] lg:text-[7vw]" data-reveal-group>
-          <span className="line-mask"><span><Kinetic text="Notices," /></span></span>
-          <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "100ms" }}><Kinetic text="noticed." /></span></span>
+          <span className="line-mask"><span>Notices,</span></span>
+          <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "100ms" }}>noticed.</span></span>
         </h3>
         <p className="mt-6 max-w-sm text-[15px] leading-[1.6] text-stone" data-reveal>
           Announcements and reminders together in one place, so they don't get lost in group chats.
@@ -285,8 +282,8 @@ export function Utilities() {
             <span className="text-ink">(06)</span> Campus utilities
           </p>
           <h2 id="utilities-title" className="display text-[17vw] lg:col-span-9 lg:text-[10vw]" data-reveal-group>
-            <span className="line-mask"><span><Kinetic text="More happens" /></span></span>
-            <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "100ms" }}><Kinetic text="here." /></span></span>
+            <span className="line-mask"><span>More happens</span></span>
+            <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "100ms" }}>here.</span></span>
           </h2>
         </div>
 

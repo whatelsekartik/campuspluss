@@ -4,7 +4,6 @@ import { usePrefersReducedMotion } from "../motion/reveal";
 import { PhoneFrame } from "../components/DeviceFrames";
 import { HomeScreen } from "../components/AppScreens";
 import { CinematicPhoto } from "../components/CinematicPhoto";
-import { Kinetic } from "../components/Kinetic";
 import { Icon } from "../components/Icon";
 import { useSmoothNav } from "../components/ShowcaseNav";
 import { IMG, ROUTES } from "../data";
@@ -42,7 +41,7 @@ export function Hero() {
     >
       {/* meta row */}
       <div className="relative z-30 mx-auto flex max-w-[1680px] items-start justify-between px-5 pt-6 sm:px-6 lg:px-10">
-        <p className="pointer-shift eyebrow max-w-[16rem] text-stone" style={{ ["--ps" as string]: "3px" }}>
+        <p className="eyebrow max-w-[16rem] text-stone">
           <span className="text-ink">(Platform)</span> An independent student platform for PCCOE
         </p>
         <a href="#how" onClick={(e) => go(e, "how")} className="eyebrow hidden items-center gap-2 text-stone hover:text-ink sm:flex">
@@ -53,16 +52,16 @@ export function Hero() {
       {/* ── Headline: painted immediately, each line travels on its own track ── */}
       <h1 id="hero-title" className="relative mx-auto max-w-[1680px] px-5 pt-6 sm:px-6 lg:px-10 lg:pt-[4vh]">
         <span className="display rm-static block will-change-transform text-[22vw] lg:text-[clamp(5rem,12.6vw,15.5rem)]" style={drift("0px", "-18vw")}>
-          <Kinetic text="Your" /> <br className="lg:hidden" />
-          <Kinetic text="campus." />
+          Your <br className="lg:hidden" />
+          campus.
         </span>
         {/* line 2 sits in front of the phone; difference blend keeps it legible over the device */}
         <span
           className="display rm-static relative z-20 block will-change-transform text-[22vw] text-ivory mix-blend-difference lg:absolute lg:left-[16vw] lg:top-[calc(4vh+12.6vw*0.86+1.5rem)] lg:text-[clamp(5rem,12.6vw,15.5rem)]"
-          style={{ ...drift("0px", "14vw"), ["--kch" as string]: "var(--color-ivory)" }}
+          style={drift("0px", "14vw")}
         >
-          <Kinetic text="in" as="em" className="serif-accent" /> <Kinetic text="one" /> <br className="lg:hidden" />
-          <Kinetic text="place." />
+          <span className="serif-accent">in</span> one <br className="lg:hidden" />
+          place.
         </span>
       </h1>
 

@@ -3,7 +3,6 @@ import { useScrollProgress } from "../motion/scroll";
 import { BrowserFrame } from "../components/DeviceFrames";
 import { TimetablePreview } from "../components/TimetablePreview";
 import { CinematicPhoto } from "../components/CinematicPhoto";
-import { Kinetic } from "../components/Kinetic";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { Icon } from "../components/Icon";
 import { IMG, ROUTES } from "../data";
@@ -29,8 +28,8 @@ export function Academic() {
           {/* headline column — the type runs into the photo on desktop */}
           <div className="relative z-20 lg:col-span-6 lg:pt-6">
             <h2 id="academic-title" className="display text-[19vw] lg:w-[54vw] lg:text-[10.4vw]" data-reveal-group>
-              <span className="line-mask"><span><Kinetic text="Know what’s" /></span></span>
-              <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "120ms" }}><Kinetic text="next." /></span></span>
+              <span className="line-mask"><span>Know what’s</span></span>
+              <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "120ms" }}>next.</span></span>
             </h2>
             <div className="mt-10 grid max-w-xl gap-8 sm:grid-cols-2 lg:mt-16">
               <p className="text-[15px] leading-[1.6] text-stone" data-reveal>

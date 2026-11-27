@@ -4,7 +4,6 @@ import { Wordmark } from "./BrandMark";
 import { Icon } from "./Icon";
 import { NAV, ROUTES, SECTION_TO_NAV } from "../data";
 import { usePrefersReducedMotion } from "../motion/reveal";
-import { Kinetic } from "./Kinetic";
 
 const SECTION_IDS = Object.keys(SECTION_TO_NAV);
 
@@ -222,9 +221,7 @@ export function ShowcaseNav() {
                   className="group flex items-baseline gap-4 py-3"
                 >
                   <span className="caption w-8 text-stone">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="display text-[clamp(2.4rem,8vw,5.5rem)] transition-transform duration-500 group-hover:translate-x-2">
-                    <Kinetic text={n.label} />
-                  </span>
+                  <span className="display text-[clamp(2.4rem,8vw,5.5rem)] transition-transform duration-500 group-hover:translate-x-2">{n.label}</span>
                 </a>
               </li>
             ))}

@@ -1,6 +1,5 @@
 import { useScrollProgress } from "../motion/scroll";
 import { CinematicPhoto } from "../components/CinematicPhoto";
-import { Kinetic } from "../components/Kinetic";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { Wordmark } from "../components/BrandMark";
 import { Icon } from "../components/Icon";
@@ -18,18 +17,18 @@ export function Closing() {
     <section id="start" ref={ref} aria-labelledby="closing-title" className="scene relative overflow-clip bg-ivory outline-none">
       {/* ── ivory statement ── */}
       <div className="relative mx-auto max-w-[1680px] px-5 pb-[26vw] pt-28 sm:px-6 lg:px-10 lg:pb-[18vw] lg:pt-40">
-        <p className="pointer-shift eyebrow text-stone" data-reveal style={{ ["--ps" as string]: "4px" }}>
+        <p className="eyebrow text-stone" data-reveal>
           <span className="text-ink">(07)</span> Get started
         </p>
         <h2 id="closing-title" className="display relative z-10 mt-8 text-[18vw] lg:text-[11.6vw]" data-reveal-group>
           {/* as in the opening, the two lines travel in opposite directions */}
           <span className="px block" style={{ ["--sx" as string]: "-7vw" }}>
-            <span className="line-mask"><span><Kinetic text="Make your" /></span></span>
+            <span className="line-mask"><span>Make your</span></span>
           </span>
           <span className="px block" style={{ ["--sx" as string]: "5vw" }}>
             <span className="line-mask">
               <span style={{ ["--rd" as string]: "100ms" }}>
-                <Kinetic text="campus" /> <Kinetic text="yours." as="em" className="serif-accent" />
+                campus <span className="serif-accent">yours.</span>
               </span>
             </span>
           </span>

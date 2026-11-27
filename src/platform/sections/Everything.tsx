@@ -4,7 +4,6 @@ import { useScrollProgress } from "../motion/scroll";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { CinematicPhoto } from "../components/CinematicPhoto";
 import { PhotoImg } from "../components/Photo";
-import { Kinetic } from "../components/Kinetic";
 import { IMG } from "../data";
 
 /*
@@ -59,12 +58,12 @@ export function Everything() {
               "translate3d(0, calc((var(--a) - 1) * 45% - var(--e) * 10%), 0) scale(calc(1.07 - var(--a) * 0.07))",
           }}
         >
-          <Kinetic text="Everything" />
+          Everything
           <span
             className="serif-accent mt-[0.1em] block text-[0.3em] leading-none"
             style={{ opacity: "clamp(0, calc((var(--p) - 0.12) / 0.14), 1)" }}
           >
-            <Kinetic text="you need, kept together." />
+            you need, kept together.
           </span>
         </h2>
 
@@ -103,8 +102,7 @@ export function Everything() {
               {STEPS.map(([n, t, d], i) => (
                 <li
                   key={n}
-                  data-magnet="40"
-                  className="rm-static rm-visible scan-row group border-t border-ivory/30 pb-3 pt-3"
+                  className="rm-static rm-visible group border-t border-ivory/30 pb-3 pt-3"
                   style={{
                     ["--t" as string]: `clamp(0, calc((var(--p) - ${(0.76 + i * 0.04).toFixed(2)}) / 0.14), 1)`,
                     opacity: "var(--t)",
@@ -113,6 +111,7 @@ export function Everything() {
                 >
                   <span className="caption opacity-70 transition-colors group-hover:text-clay">{n}</span>
                   <p className="mt-1 text-base font-semibold transition-transform duration-500 group-hover:translate-x-1">{t}</p>
+                  <span className="mt-2 block h-px w-0 bg-ivory/40 transition-[width] duration-500 group-hover:w-full" aria-hidden="true" />
                   <p className="caption mt-1 opacity-80">{d}</p>
                 </li>
               ))}
@@ -123,12 +122,12 @@ export function Everything() {
         {/* floating side photographs: wipe in, pan internally, then drift outward as the panel takes over */}
         <div
           className="rm-static absolute left-[5vw] top-[40vh] z-20 w-[30vw] will-change-transform lg:left-[7vw] lg:top-[38vh] lg:w-[13vw]"
-          data-hover-media data-sheen
           style={{
             transform: "translate3d(calc(var(--e) * -24vw), calc(var(--p) * -26vh), 0)",
             opacity: "calc(1 - var(--e) * 1.2)",
           }}
         >
+          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
           <CinematicPhoto
             img={IMG.stairs}
             scene="inherit"
@@ -140,18 +139,19 @@ export function Everything() {
             widths={[300, 500]}
             frameClassName="rounded-[4px]"
           />
+          </div>
           <p className="caption mt-2 text-stone" style={{ opacity: "clamp(0, calc((var(--p) - 0.2) / 0.08), 1)" }}>
             Between lectures.
           </p>
         </div>
         <div
           className="rm-static absolute bottom-[6vh] right-[5vw] z-20 w-[36vw] will-change-transform lg:bottom-[9vh] lg:right-[6vw] lg:w-[18vw]"
-          data-hover-media data-sheen
           style={{
             transform: "translate3d(calc(var(--e) * 24vw), calc(var(--p) * -18vh), 0)",
             opacity: "calc(1 - var(--e) * 1.2)",
           }}
         >
+          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
           <CinematicPhoto
             img={IMG.notebook}
             scene="inherit"
@@ -163,15 +163,16 @@ export function Everything() {
             widths={[360, 600]}
             frameClassName="rounded-[4px]"
           />
+          </div>
         </div>
         <div
           className="rm-static absolute right-[16vw] top-[22vh] z-20 hidden w-[8vw] will-change-transform lg:block"
-          data-hover-media data-sheen
           style={{
             transform: "translate3d(calc(var(--e) * 14vw), calc(var(--p) * -40vh), 0)",
             opacity: "calc(1 - var(--e) * 1.3)",
           }}
         >
+          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
           <CinematicPhoto
             img={IMG.concreteGreen}
             scene="inherit"
@@ -183,6 +184,7 @@ export function Everything() {
             widths={[200, 320]}
             frameClassName="rounded-[4px] bg-transparent"
           />
+          </div>
         </div>
 
         {/* short central statement before the expansion */}

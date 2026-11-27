@@ -5,7 +5,6 @@ import { usePrefersReducedMotion } from "../motion/reveal";
 import { PhoneFrame } from "../components/DeviceFrames";
 import { CommunityScreen } from "../components/AppScreens";
 import { CinematicPhoto, CrossfadeStack, type CineDirection } from "../components/CinematicPhoto";
-import { Kinetic } from "../components/Kinetic";
 import { COMMUNITY_STEPS, IMG } from "../data";
 
 function CommunityIntro() {
@@ -40,7 +39,7 @@ function CommunityIntro() {
           className="display px block whitespace-nowrap pl-[4vw] text-[23vw] lg:text-[17vw]"
           style={{ ["--sx" as string]: "-26vw" }}
         >
-          <Kinetic text="Find your" />
+          Find your
         </span>
       </h2>
 
@@ -71,7 +70,7 @@ function CommunityIntro() {
 
       <p className="relative z-10 -mt-[6vw] text-right" aria-hidden="true">
         <span className="display px serif-accent inline-block whitespace-nowrap pr-[4vw] text-[23vw] lg:text-[17vw]" style={{ ["--sx" as string]: "22vw" }}>
-          <Kinetic text="people." />
+          people.
         </span>
       </p>
 
@@ -131,7 +130,7 @@ function CommunitySequence() {
             </p>
             <h3 className="mt-3 overflow-clip lg:mt-6">
               <span key={step.key} className="title-in display block whitespace-nowrap text-[14vw] text-ivory lg:text-[6vw]">
-                <Kinetic text={step.title} />
+                {step.title}
               </span>
             </h3>
             <p key={step.key + "s"} className="soft-in serif-accent mt-1 text-[7vw] leading-none text-ivory/60 lg:text-[3vw]">

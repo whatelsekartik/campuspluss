@@ -141,6 +141,10 @@
 .line-mask[data-in] > span {
   transform: none;
 }
+/* the hero headline is above the fold: let it rise with the page paint */
+.line-mask[data-eager] > span {
+  transform: none;
+}
 
 /* ───────────────────────── Scroll-linked helpers ─────────────────────────
    The shared engine (motion/scroll.ts) writes a single --p (0..1) per scene;
@@ -429,10 +433,10 @@
     scale(calc(1 + var(--tilt-z)));
   transform-style: preserve-3d;
   transition: transform 140ms linear;
-  will-change: transform;
 }
 [data-tilt]:hover {
   --tilt-z: 0.012;
+  will-change: transform;
 }
 /* large canvases tilt less so the horizon stays believable */
 [data-tilt="soft"] {
@@ -466,10 +470,10 @@
   transform: translate(calc(var(--shx, 0) * 32%), calc(var(--shy, 0) * 32%));
   mix-blend-mode: soft-light;
   transition: opacity 0.55s var(--ease-editorial);
-  will-change: transform;
 }
 [data-sheen]:hover::after {
   opacity: 1;
+  will-change: transform;
 }
 
 /* Magnetic attraction (the engine sets --mgx/--mgy from a coarse pass). */
@@ -477,9 +481,14 @@
   --mgx: 0px;
   --mgy: 0px;
   --mgd: 0;
-  transform: translate3d(var(--mgx), var(--mgy), 0);
-  transition: transform 140ms linear;
-  will-change: transform;
+  /* individual `translate` — composes with any other transform, and inline
+     elements shift without changing their box, so no reflow is triggered */
+  translate: var(--mgx) var(--mgy);
+  transition: translate 140ms linear;
+  will-change: auto;
+}
+[data-magnet]:hover {
+  will-change: translate;
 }
 
 /* Underline that rides the cursor along the word. */
@@ -507,39 +516,6 @@
 .ink-link:hover::after,
 .ink-link:focus-visible::after {
   transform: scaleX(1);
-}
-
-/* ── Kinetic type: letters lift in a wave as the cursor crosses them ── */
-.kinetic-run {
-  display: inline-block;
-}
-.kinetic-run .kw {
-  display: inline-block;
-  white-space: nowrap;
-}
-.kinetic-run .ch {
-  display: inline-block;
-  transform-origin: 50% 85%;
-  transition:
-    transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
-    color 0.35s var(--ease-editorial);
-  will-change: transform;
-}
-.kinetic-run .ch:hover {
-  transform: translate3d(0, -0.055em, 0) rotate(-3.5deg) scale(1.02);
-  color: var(--kch, var(--color-clay));
-}
-.kinetic-run .ch:has(+ .ch:hover) {
-  transform: translate3d(0, -0.032em, 0) rotate(-1.8deg);
-}
-.kinetic-run .ch:hover + .ch {
-  transform: translate3d(0, -0.032em, 0) rotate(1.8deg);
-}
-.kinetic-run .ch:has(+ .ch + .ch:hover) {
-  transform: translate3d(0, -0.014em, 0);
-}
-.kinetic-run .ch:hover + .ch + .ch {
-  transform: translate3d(0, -0.014em, 0);
 }
 
 /* ── Press: soft ink sheen on buttons ── */
@@ -647,42 +623,13 @@
   }
 }
 
-/* ── Ambient pointer light: a very faint warm wash behind the page ── */
-.pointer-field {
-  position: fixed;
-  left: -45vmax;
-  top: -45vmax;
-  width: 90vmax;
-  height: 90vmax;
-  z-index: 60;
-  pointer-events: none;
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 246, 226, 0.17),
-    rgba(198, 158, 120, 0.08) 42%,
-    transparent 70%
-  );
-  mix-blend-mode: soft-light;
-  opacity: 0;
-  translate: calc(var(--mvx, 50vw) + 45vmax) calc(var(--mvy, 40vh) + 45vmax);
-  transition: opacity 1.2s var(--ease-editorial);
-  will-change: translate;
-}
-
-/* Ambient pointer shift: individual `translate`, so it composes with any
-   scroll transform already on the element instead of replacing it. */
-.pointer-shift {
-  translate: calc(var(--pmx, 0) * var(--ps, 5px)) calc(var(--pmy, 0) * var(--ps, 5px));
-}
-
 /* Coarse pointers get no custom affordances at all. */
 @media (pointer: coarse) {
   [data-tilt],
   [data-magnet] {
     transform: none !important;
   }
-  [data-sheen]::after,
-  .pointer-field {
+  [data-sheen]::after {
     display: none !important;
   }
 }
@@ -733,13 +680,11 @@
     opacity: 1 !important;
     transform: rotate(var(--rot, 0deg)) !important;
   }
-  .cursor-trail,
-  .pointer-field {
+  .cursor-trail {
     display: none !important;
   }
   [data-tilt],
   [data-magnet],
-  .kinetic-run .ch,
   .paper-lift,
   .scan-row,
   .pressable:active {

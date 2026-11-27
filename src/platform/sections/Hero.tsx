@@ -6,6 +6,7 @@ import { HomeScreen } from "../components/AppScreens";
 import { CinematicPhoto } from "../components/CinematicPhoto";
 import { Icon } from "../components/Icon";
 import { useSmoothNav } from "../components/ShowcaseNav";
+import { startTour } from "../motion/tour";
 import { IMG, ROUTES } from "../data";
 
 /**
@@ -165,7 +166,18 @@ export function Hero() {
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <a
             href="#how"
-            onClick={(e) => go(e, "how")}
+            onClick={(e) => {
+              // the guided sweep is the point of this control: keep the link
+              // semantics for no-JS / new-tab, take over for a plain click
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+                go(e, "how");
+                return;
+              }
+              e.preventDefault();
+              history.replaceState(null, "", "#how");
+              startTour();
+            }}
+            aria-label="Explore the platform: a guided scroll through each section"
             data-magnet="46"
             className="pressable group inline-flex items-center gap-3 rounded-full bg-ink py-2 pl-5 pr-2 text-sm font-medium text-ivory"
           >

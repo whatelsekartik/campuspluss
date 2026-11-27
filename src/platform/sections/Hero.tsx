@@ -9,10 +9,23 @@ import { Icon } from "../components/Icon";
 import { useSmoothNav } from "../components/ShowcaseNav";
 import { IMG, ROUTES } from "../data";
 
-/** translateY linked to hero exit progress (outer wrapper; inner handles intro). */
+/**
+ * Layer drift linked to the hero's exit progress (--p: 0 → 1 as it scrolls away).
+ * Every layer gets its own speed, so headline, phone and photographs separate
+ * in depth. Distances shrink on small screens through --k.
+ */
 const drift = (y: string, x = "0px"): CSSProperties => ({
-  transform: `translate3d(calc(var(--p) * ${x}), calc(var(--p) * ${y}), 0)`,
+  transform: `translate3d(calc(var(--p) * ${x} * var(--k)), calc(var(--p) * ${y} * var(--k)), 0)`,
 });
+
+/** The phone also turns slightly away from the viewer as it leaves. */
+const phoneExit: CSSProperties = {
+  transform:
+    "perspective(1500px) translate3d(0, calc(var(--p) * -110px * var(--k)), 0) rotateY(calc(var(--p) * -16deg)) rotateX(calc(var(--p) * 9deg))",
+};
+
+/** Camera move shared by the hero photographs: slow tilt + push-in while scrolling. */
+const SHOT = { pan: [0, 14] as [number, number], zoom: [1.15, 1.26] as [number, number] };
 
 export function Hero() {
   const reduced = usePrefersReducedMotion();
@@ -25,27 +38,8 @@ export function Hero() {
       ref={ref}
       aria-labelledby="hero-title"
       className="scene relative isolate overflow-clip bg-ivory pt-14 lg:h-[100svh] lg:min-h-[720px]"
+      style={{ ["--p" as string]: 0 }}
     >
-      {/* faint architectural backdrop — slow horizontal pan behind the type */}
-      <div className="pointer-events-none absolute inset-0 z-0 hidden lg:block" aria-hidden="true">
-        <div className="absolute inset-0 opacity-[0.14]" style={drift("-40px", "0px")}>
-          <CinematicPhoto
-            img={IMG.concreteGreen}
-            ratio="16/9"
-            crop={[16, 9]}
-            sizes="100vw"
-            widths={[1200, 1800]}
-            priority
-            preset="horizontal-pan"
-            reveal="none"
-            parallaxX="60px"
-            zoom={1.25}
-            className="absolute inset-0 size-full"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-ivory via-transparent to-ivory" />
-      </div>
-
       {/* meta row */}
       <div className="relative z-30 mx-auto flex max-w-[1680px] items-start justify-between px-5 pt-6 sm:px-6 lg:px-10">
         <p className="pointer-shift eyebrow max-w-[16rem] text-stone" style={{ ["--ps" as string]: "3px" }}>
@@ -56,58 +50,53 @@ export function Hero() {
         </a>
       </div>
 
-      {/* ── Headline line 1 (behind the phone) ── */}
+      {/* ── Headline: painted immediately, each line travels on its own track ── */}
       <h1 id="hero-title" className="relative mx-auto max-w-[1680px] px-5 pt-6 sm:px-6 lg:px-10 lg:pt-[4vh]">
-        <span className="block w-fit">
-          <span className="display rm-static block text-[22vw] lg:text-[clamp(5rem,12.6vw,15.5rem)]" style={drift("-30px", "-14vw")}>
-            <Kinetic text="Your" /> <br className="lg:hidden" />
-            <Kinetic text="campus." />
-          </span>
+        <span className="display rm-static block will-change-transform text-[22vw] lg:text-[clamp(5rem,12.6vw,15.5rem)]" style={drift("0px", "-18vw")}>
+          <Kinetic text="Your" /> <br className="lg:hidden" />
+          <Kinetic text="campus." />
         </span>
         {/* line 2 sits in front of the phone; difference blend keeps it legible over the device */}
         <span
-          className="relative z-20 block w-fit text-[22vw] mix-blend-difference lg:absolute lg:left-[16vw] lg:top-[calc(4vh+12.6vw*0.86+1.5rem)] lg:text-[clamp(5rem,12.6vw,15.5rem)]"
-          style={{ ...drift("-60px", "10vw"), ["--kch" as string]: "var(--color-ivory)" }}
+          className="display rm-static relative z-20 block will-change-transform text-[22vw] text-ivory mix-blend-difference lg:absolute lg:left-[16vw] lg:top-[calc(4vh+12.6vw*0.86+1.5rem)] lg:text-[clamp(5rem,12.6vw,15.5rem)]"
+          style={{ ...drift("0px", "14vw"), ["--kch" as string]: "var(--color-ivory)" }}
         >
-          <span className="display rm-static block">
-            <Kinetic text="in" as="em" className="serif-accent" /> <Kinetic text="one" /> <br className="lg:hidden" />
-            <Kinetic text="place." />
-          </span>
+          <Kinetic text="in" as="em" className="serif-accent" /> <Kinetic text="one" /> <br className="lg:hidden" />
+          <Kinetic text="place." />
         </span>
       </h1>
 
-      {/* ── Phone with depth + scroll-linked settling ── */}
+      {/* ── Phone: arrives with depth, tilts away on exit ── */}
       <div
-        className="rm-static relative z-10 mx-auto -mt-[10vw] w-[min(62vw,300px)] translate-x-[12%] lg:absolute lg:left-[59vw] lg:top-[11vh] lg:mt-0 lg:w-[clamp(250px,21vw,360px)] lg:translate-x-0"
-        style={drift("-90px")}
+        className="rm-static relative z-10 mx-auto -mt-[10vw] w-[min(62vw,300px)] translate-x-[12%] will-change-transform lg:absolute lg:left-[59vw] lg:top-[11vh] lg:mt-0 lg:w-[clamp(250px,21vw,360px)] lg:translate-x-0"
+        style={phoneExit}
       >
-        <div data-tilt data-cursor="media" className="will-change-transform">
-        <div
-          style={{
-            transform: "rotateX(calc(var(--p, 0) * 6deg)) rotateY(calc(var(--p, 0) * -4deg))",
-            transformOrigin: "50% 80%",
-          }}
-        >
-          <div className="intro-rise" style={{ ["--d" as string]: "120ms" }}>
-            <PhoneFrame label="Campus+ home screen showing the next lecture, quick links and today's campus updates (demonstration data)">
-              <HomeScreen />
-            </PhoneFrame>
-          </div>
-          {/* depth shadow that deepens as the hero exits */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -inset-x-6 -bottom-8 -z-10 h-16 rounded-[100%] bg-ink/20 blur-2xl"
-            style={{ opacity: "calc(0.5 + var(--p, 0) * 0.5)", transform: "scaleX(calc(0.9 + var(--p, 0) * 0.15))" }}
-          />
+        <div data-tilt data-cursor="media">
+        <div className="phone-in" style={{ ["--d" as string]: "140ms" }}>
+          <PhoneFrame label="Campus+ home screen showing the next lecture, quick links and today's campus updates (demonstration data)">
+            <HomeScreen />
+          </PhoneFrame>
         </div>
         </div>
         {/* mobile-only companion photo */}
         <div className="absolute -left-[39%] bottom-[10%] w-[33%] lg:hidden" aria-hidden="true">
-          <CinematicPhoto img={IMG.libraryAisle} ratio="3/4" crop={[3, 4]} sizes="25vw" widths={[240, 400]} preset="zoom-reveal" reveal="scale" delay={500} className="rounded-[3px]" />
-          <p className="caption mt-2 text-stone">(01) Up next, at a glance.</p>
+          <CinematicPhoto
+            img={IMG.libraryAisle}
+            scene="inherit"
+            params={SHOT}
+            intro={{ from: "up", delay: 420 }}
+            ratio="3/4"
+            crop={[3, 4]}
+            sizes="25vw"
+            widths={[240, 400]}
+            frameClassName="rounded-[3px]"
+          />
+          <p className="caption intro-fade mt-2 text-stone" style={{ ["--d" as string]: "900ms" }}>
+            (01) Up next, at a glance.
+          </p>
         </div>
         {/* annotation attached to the phone */}
-        <div className="intro-fade absolute -left-[58%] top-[74%] hidden w-[40%] lg:block" style={{ ["--d" as string]: "700ms" }}>
+        <div className="intro-fade absolute -left-[58%] top-[74%] hidden w-[40%] lg:block" style={{ ["--d" as string]: "1100ms" }}>
           <p className="caption text-stone">
             <span className="text-ink">(01)</span> Up next — your next class, the room, and how long until it starts.
           </p>
@@ -115,21 +104,56 @@ export function Hero() {
         </div>
       </div>
 
-      {/* ── Floating photographs — staggered entrances, independent camera moves ── */}
-      <div className="rm-static absolute right-[3vw] top-[19vh] z-0 hidden w-[10.5vw] lg:block" style={drift("140px")}>
+      {/* ── Photographs: staggered wipes from different edges, each on its own depth plane ── */}
+      <div className="rm-static absolute right-[3vw] top-[19vh] z-0 hidden w-[10.5vw] will-change-transform lg:block" style={drift("170px")}>
         <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
-          <CinematicPhoto img={IMG.concreteFacade} ratio="1/1" crop={[1, 1]} sizes="11vw" widths={[240, 400]} priority preset="zoom-reveal" reveal="clip-up" delay={260} className="rounded-[4px]" />
+        <CinematicPhoto
+          img={IMG.concreteFacade}
+          scene="inherit"
+          params={SHOT}
+          intro={{ from: "down", delay: 260 }}
+          ratio="1/1"
+          crop={[1, 1]}
+          sizes="11vw"
+          widths={[240, 400]}
+          priority
+          frameClassName="rounded-[4px]"
+        />
         </div>
-        <p className="caption mt-2 text-stone">Spaces you walk through daily.</p>
+        <p className="caption intro-fade mt-2 text-stone" style={{ ["--d" as string]: "1000ms" }}>
+          Spaces you walk through daily.
+        </p>
       </div>
-      <div className="rm-static absolute bottom-[6vh] right-[2.5vw] z-0 hidden w-[17vw] lg:block" style={drift("-180px")}>
+      <div className="rm-static absolute bottom-[6vh] right-[2.5vw] z-0 hidden w-[17vw] will-change-transform lg:block" style={drift("-230px")}>
         <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
-          <CinematicPhoto img={IMG.deskSun} ratio="4/3" crop={[4, 3]} sizes="17vw" widths={[400, 640]} priority preset="parallax" reveal="wipe-left" delay={380} parallaxY="50px" className="rounded-[4px]" />
+        <CinematicPhoto
+          img={IMG.deskSun}
+          scene="inherit"
+          params={{ pan: [-10, 0], zoom: [1.14, 1.24] }}
+          intro={{ from: "left", delay: 520 }}
+          ratio="4/3"
+          crop={[4, 3]}
+          sizes="17vw"
+          widths={[400, 640]}
+          priority
+          frameClassName="rounded-[4px]"
+        />
         </div>
       </div>
-      <div className="rm-static absolute bottom-[5vh] left-[31vw] z-0 hidden w-[12.5vw] lg:block" style={drift("-60px")}>
+      <div className="rm-static absolute bottom-[5vh] left-[31vw] z-0 hidden w-[12.5vw] will-change-transform lg:block" style={drift("-80px")}>
         <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
-          <CinematicPhoto img={IMG.libraryAisle} ratio="3/4" crop={[3, 4]} sizes="13vw" widths={[300, 500]} priority preset="vertical-pan" reveal="clip-up" delay={320} parallaxY="40px" className="rounded-[4px]" />
+        <CinematicPhoto
+          img={IMG.libraryAisle}
+          scene="inherit"
+          params={SHOT}
+          intro={{ from: "up", delay: 400 }}
+          ratio="3/4"
+          crop={[3, 4]}
+          sizes="13vw"
+          widths={[300, 500]}
+          priority
+          frameClassName="rounded-[4px]"
+        />
         </div>
       </div>
 

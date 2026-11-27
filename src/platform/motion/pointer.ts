@@ -26,6 +26,7 @@ import { useEffect } from "react";
  *   data-sheen         cursor-following highlight
  *   data-hover-media   frame lifts + photograph warms (pure CSS)
  *   data-tilt="soft"   quieter tilt for large canvases
+ *   .ink-link          underline that rides the cursor along the word
  */
 
 export type PointerMode = "default" | "link" | "media" | "text" | "drag";

@@ -1,22 +1,31 @@
 import type { CSSProperties } from "react";
+import { cn } from "@/utils/cn";
 import { useScrollProgress } from "../motion/scroll";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { CinematicPhoto } from "../components/CinematicPhoto";
+import { PhotoImg } from "../components/Photo";
 import { Kinetic } from "../components/Kinetic";
 import { IMG } from "../data";
 
 /*
-  Sticky choreography driven by one --p value (0..1):
-   --a : intro (giant type slides in from above)          p 0.00 → 0.35
-   --e : expansion (photo grows to fill the viewport)     p 0.40 → 0.85
-   --s : statement reveal over the expanded photo         p 0.70 → 0.92
-   --k : internal camera drift (independent of the panel) p 0.00 → 1.00
+  Sticky choreography driven by one --p value (0..1). Each beat has its own
+  window so the scene reads as a sequence of cuts rather than one tween:
+
+   --a  headline descends from above the frame             p 0.00 → 0.30
+   --w  side photographs wipe in                           p 0.04 → 0.26   (their own .cine window)
+   --e  the inset photograph expands to the full viewport  p 0.34 → 0.80
+   --s  "One campus." is unmasked over the photograph      p 0.66 → 0.88
+   --t* the three steps follow, one after another          p 0.76 → 0.98
+
+  Three things move independently on the main photograph:
+   panel  (scale + rise)   — the frame growing
+   camera (zoom + drift)   — the shot pulling back, then pushing in again
+   veil   (opacity)        — light falling as the statement arrives
 */
 const sceneVars = {
-  "--a": "clamp(0, calc(var(--p) / 0.35), 1)",
-  "--e": "clamp(0, calc((var(--p) - 0.4) / 0.45), 1)",
-  "--s": "clamp(0, calc((var(--p) - 0.7) / 0.22), 1)",
-  "--k": "clamp(0, calc((var(--p) - 0.15) / 0.7), 1)",
+  "--a": "clamp(0, calc(var(--p) / 0.3), 1)",
+  "--e": "clamp(0, calc((var(--p) - 0.34) / 0.46), 1)",
+  "--s": "clamp(0, calc((var(--p) - 0.66) / 0.22), 1)",
 } as CSSProperties;
 
 const STEPS = [
@@ -24,6 +33,9 @@ const STEPS = [
   ["02", "Set your division", "Your timetable follows the division you pick."],
   ["03", "Everything else", "Clubs, events, the marketplace and more are one tap away."],
 ];
+
+/** Reveal window for the floating side photographs (inside the sticky scene). */
+const SIDE_WINDOW: [number, number] = [0.04, 0.26];
 
 export function Everything() {
   const reduced = usePrefersReducedMotion();
@@ -34,74 +46,70 @@ export function Everything() {
       id="how"
       ref={ref}
       aria-labelledby="how-title"
-      className="scene relative bg-ivory outline-none"
-      style={{ ...sceneVars, height: reduced ? "auto" : "260vh", ...(reduced ? { ["--p" as string]: 1 } : null) }}
+      className={cn("scene relative bg-ivory outline-none", !reduced && "h-[230vh] lg:h-[270vh]")}
+      style={{ ...sceneVars, ["--p" as string]: reduced ? 1 : 0 }}
     >
       <div className={reduced ? "relative h-[100svh] overflow-hidden" : "sticky top-0 h-[100svh] overflow-hidden"}>
-        {/* giant headline entering from the top — with a slow scale settle */}
+        {/* giant headline entering from the top, then lifting away as the photograph grows */}
         <h2
           id="how-title"
-          className="display rm-static pointer-events-none absolute inset-x-0 top-[3.5rem] z-0 whitespace-nowrap px-4 text-center text-[18vw] leading-[0.8] lg:text-[19.5vw]"
+          className="display rm-static pointer-events-none absolute inset-x-0 top-[3.5rem] z-0 whitespace-nowrap px-4 text-center text-[18vw] leading-[0.8] will-change-transform lg:text-[19.5vw]"
           style={{
             transform:
-              "translate3d(0, calc((var(--a) - 1) * 45%), 0) scale(calc(1.04 - var(--a) * 0.04))",
-            opacity: "calc(0.25 + var(--a) * 0.75)",
+              "translate3d(0, calc((var(--a) - 1) * 45% - var(--e) * 10%), 0) scale(calc(1.07 - var(--a) * 0.07))",
           }}
         >
           <Kinetic text="Everything" />
-          <span className="serif-accent mt-[0.1em] block text-[0.3em] leading-none">
+          <span
+            className="serif-accent mt-[0.1em] block text-[0.3em] leading-none"
+            style={{ opacity: "clamp(0, calc((var(--p) - 0.12) / 0.14), 1)" }}
+          >
             <Kinetic text="you need, kept together." />
           </span>
         </h2>
 
-        {/* main photographic panel — expands to fill the viewport.
-            Outer scales + rounds away; inner camera moves independently. */}
+        {/* main photographic panel — the frame expands to fill the viewport */}
         <div
-          className="rm-static absolute inset-0 z-10 origin-[50%_62%] overflow-hidden rounded-[28px] will-change-transform"
-          style={{
-            transform: "scale(calc(0.4 + var(--e) * 0.6)) translate3d(0, calc((1 - var(--e)) * 14%), 0)",
-            borderRadius: "calc(28px * (1 - var(--e)))",
-            clipPath: "inset(calc((1 - var(--e)) * 6%) calc((1 - var(--e)) * 4%) calc((1 - var(--e)) * 6%) calc((1 - var(--e)) * 4%))",
-          }}
+          className="rm-static absolute inset-0 z-10 origin-[50%_62%] overflow-hidden rounded-[28px] bg-sand will-change-transform"
+          style={{ transform: "scale(calc(0.4 + var(--e) * 0.6)) translate3d(0, calc((1 - var(--e)) * 14%), 0)" }}
         >
-          {/* independent camera: slow zoom + gentle vertical pan as --e advances */}
+          {/* camera: pulls back while the frame opens, drifts, then pushes in under the statement */}
           <div
-            className="absolute inset-0 will-change-transform"
+            className="rm-static absolute inset-0 will-change-transform"
             style={{
               transform:
-                "scale(calc(1.22 - var(--e) * 0.22)) translate3d(0, calc((var(--k) - 0.5) * 4%), 0)",
-              transformOrigin: "50% 58%",
+                "translate3d(0, calc((0.5 - var(--p)) * 5%), 0) scale(calc(1.36 - var(--e) * 0.27 + var(--s) * 0.08))",
             }}
           >
-            <CinematicPhoto
-              img={IMG.library}
-              sizes="100vw"
-              widths={[800, 1280, 1920]}
-              preset="zoom-reveal"
-              reveal="none"
-              zoom={1.02}
-              className="absolute inset-0 size-full"
-            />
+            <PhotoImg img={IMG.library} sizes="100vw" widths={[800, 1280, 1920]} />
           </div>
-          <div className="absolute inset-0 bg-ink" style={{ opacity: "calc(var(--e) * 0.55)" }} />
-          {/* closing statement over the photo */}
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-ivory"
-            style={{
-              opacity: "var(--s)",
-              transform: "translate3d(0, calc((1 - var(--s)) * 40px), 0) scale(calc(0.98 + var(--s) * 0.02))",
-            }}
-          >
-            <p className="eyebrow mb-6 opacity-80">(02) How it works</p>
-            <p className="display text-[19vw] lg:text-[12vw]">
+          <div className="absolute inset-0 bg-ink" style={{ opacity: "calc(var(--e) * 0.3 + var(--s) * 0.28)" }} />
+
+          {/* closing statement, unmasked from below */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-ivory">
+            <p className="eyebrow mb-6" style={{ opacity: "calc(var(--s) * 0.8)" }}>
+              (02) How it works
+            </p>
+            <p
+              className="display rm-static text-[19vw] will-change-transform lg:text-[12vw]"
+              style={{
+                clipPath: "inset(-0.1em -0.1em calc((1 - var(--s)) * 100%) -0.1em)",
+                transform: "translate3d(0, calc((1 - var(--s)) * 0.45em), 0)",
+              }}
+            >
               <span className="serif-accent">One</span> campus.
             </p>
             <ol className="mt-10 grid max-w-4xl gap-6 text-left sm:grid-cols-3">
-              {STEPS.map(([n, t, d]) => (
+              {STEPS.map(([n, t, d], i) => (
                 <li
                   key={n}
                   data-magnet="40"
-                  className="scan-row group border-t border-ivory/30 pb-3 pt-3"
+                  className="rm-static rm-visible scan-row group border-t border-ivory/30 pb-3 pt-3"
+                  style={{
+                    ["--t" as string]: `clamp(0, calc((var(--p) - ${(0.76 + i * 0.04).toFixed(2)}) / 0.14), 1)`,
+                    opacity: "var(--t)",
+                    transform: "translate3d(0, calc((1 - var(--t)) * 28px), 0)",
+                  }}
                 >
                   <span className="caption opacity-70 transition-colors group-hover:text-clay">{n}</span>
                   <p className="mt-1 text-base font-semibold transition-transform duration-500 group-hover:translate-x-1">{t}</p>
@@ -112,46 +120,78 @@ export function Everything() {
           </div>
         </div>
 
-        {/* floating side photographs (in front of the panel, drifting outward) */}
+        {/* floating side photographs: wipe in, pan internally, then drift outward as the panel takes over */}
         <div
-          className="rm-static absolute left-[5vw] top-[40vh] z-20 w-[30vw] lg:left-[7vw] lg:top-[38vh] lg:w-[13vw]"
+          className="rm-static absolute left-[5vw] top-[40vh] z-20 w-[30vw] will-change-transform lg:left-[7vw] lg:top-[38vh] lg:w-[13vw]"
+          data-hover-media data-sheen
           style={{
-            transform: "translate3d(calc(var(--e) * -24vw), calc(var(--p) * -26vh), 0) rotate(calc(var(--e) * -3deg))",
+            transform: "translate3d(calc(var(--e) * -24vw), calc(var(--p) * -26vh), 0)",
             opacity: "calc(1 - var(--e) * 1.2)",
           }}
         >
-          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
-            <CinematicPhoto img={IMG.stairs} ratio="3/4" crop={[3, 4]} sizes="(min-width:1024px) 13vw, 30vw" widths={[300, 500]} preset="float" reveal="none" parallaxY="30px" className="rounded-[4px]" />
-          </div>
-          <p className="caption mt-2 text-stone">Between lectures.</p>
+          <CinematicPhoto
+            img={IMG.stairs}
+            scene="inherit"
+            preset={["wipe", "vertical-pan"]}
+            params={{ from: "up", window: SIDE_WINDOW, pan: [0, -22], revealZoom: 0.2 }}
+            ratio="3/4"
+            crop={[3, 4]}
+            sizes="(min-width:1024px) 13vw, 30vw"
+            widths={[300, 500]}
+            frameClassName="rounded-[4px]"
+          />
+          <p className="caption mt-2 text-stone" style={{ opacity: "clamp(0, calc((var(--p) - 0.2) / 0.08), 1)" }}>
+            Between lectures.
+          </p>
         </div>
         <div
-          className="rm-static absolute bottom-[6vh] right-[5vw] z-20 w-[36vw] lg:bottom-[9vh] lg:right-[6vw] lg:w-[18vw]"
+          className="rm-static absolute bottom-[6vh] right-[5vw] z-20 w-[36vw] will-change-transform lg:bottom-[9vh] lg:right-[6vw] lg:w-[18vw]"
+          data-hover-media data-sheen
           style={{
-            transform: "translate3d(calc(var(--e) * 24vw), calc(var(--p) * -18vh), 0) rotate(calc(var(--e) * 2.5deg))",
+            transform: "translate3d(calc(var(--e) * 24vw), calc(var(--p) * -18vh), 0)",
             opacity: "calc(1 - var(--e) * 1.2)",
           }}
         >
-          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
-            <CinematicPhoto img={IMG.notebook} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 18vw, 36vw" widths={[360, 600]} preset="float" reveal="none" parallaxY="40px" className="rounded-[4px]" />
-          </div>
+          <CinematicPhoto
+            img={IMG.notebook}
+            scene="inherit"
+            preset={["wipe", "horizontal-pan"]}
+            params={{ from: "left", window: [0.08, 0.3], pan: [18, 0], revealZoom: 0.2 }}
+            ratio="4/5"
+            crop={[4, 5]}
+            sizes="(min-width:1024px) 18vw, 36vw"
+            widths={[360, 600]}
+            frameClassName="rounded-[4px]"
+          />
         </div>
         <div
-          className="rm-static absolute right-[16vw] top-[22vh] z-20 hidden w-[8vw] lg:block"
+          className="rm-static absolute right-[16vw] top-[22vh] z-20 hidden w-[8vw] will-change-transform lg:block"
+          data-hover-media data-sheen
           style={{
-            transform: "translate3d(calc(var(--e) * 14vw), calc(var(--p) * -40vh), 0) rotate(calc(var(--e) * 4deg))",
+            transform: "translate3d(calc(var(--e) * 14vw), calc(var(--p) * -40vh), 0)",
             opacity: "calc(1 - var(--e) * 1.3)",
           }}
         >
-          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
-            <CinematicPhoto img={IMG.concreteGreen} ratio="1/1" crop={[1, 1]} sizes="8vw" widths={[200, 320]} preset="float" reveal="none" parallaxY="24px" className="rounded-[4px]" />
-          </div>
+          <CinematicPhoto
+            img={IMG.concreteGreen}
+            scene="inherit"
+            preset={["zoom-reveal", "parallax"]}
+            params={{ window: [0.12, 0.32], inset: 50, revealZoom: 0.3 }}
+            ratio="1/1"
+            crop={[1, 1]}
+            sizes="8vw"
+            widths={[200, 320]}
+            frameClassName="rounded-[4px] bg-transparent"
+          />
         </div>
 
         {/* short central statement before the expansion */}
         <p
           className="rm-static absolute bottom-[7vh] left-1/2 z-20 w-[min(88vw,26rem)] -translate-x-1/2 text-center text-[15px] leading-[1.55] text-stone max-lg:bottom-auto max-lg:top-[26vh]"
-          style={{ opacity: "calc(1 - var(--e) * 2.5)", transform: "translate3d(-50%, calc(var(--e) * -30px), 0)" }}
+          style={{
+            opacity: "calc(clamp(0, calc((var(--p) - 0.1) / 0.12), 1) - var(--e) * 2.5)",
+            transform: "translate3d(0, calc((1 - clamp(0, calc((var(--p) - 0.1) / 0.12), 1)) * 18px), 0)",
+          }}
         >
           From your first lecture to the ride home, everyday student life in one place.
         </p>

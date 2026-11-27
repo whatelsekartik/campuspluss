@@ -40,9 +40,9 @@ export default function PlatformPage() {
 
   return (
     <div data-platform className="bg-ivory text-ink">
+      <ShowcaseNav />
       <PointerField />
       <CursorTrail />
-      <ShowcaseNav />
       <main id="main">
         <Hero />
         <Everything />

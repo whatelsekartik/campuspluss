@@ -1,8 +1,9 @@
 import { useScrollProgress } from "../motion/scroll";
 import { CinematicPhoto } from "../components/CinematicPhoto";
-import { Kinetic } from "../components/Kinetic";
+import { usePrefersReducedMotion } from "../motion/reveal";
 import { Icon, type IconName } from "../components/Icon";
 import { IMG } from "../data";
+import { Kinetic } from "../components/Kinetic";
 
 /* Small UI fragments that echo Campus+ cards (demonstration content). */
 function Fragment({ icon, kicker, title, meta }: { icon: IconName; kicker: string; title: string; meta: string }) {
@@ -30,28 +31,41 @@ function Index({ n, label }: { n: string; label: string }) {
   );
 }
 
-/* ── Housing: vertical reveal + slow internal drift, floating listing ── */
+/* ── Housing: vertical reveal, slow tilt inside the frame, listing card floating in front ── */
 function Housing() {
-  const ref = useScrollProgress<HTMLDivElement>("pass");
+  const reduced = usePrefersReducedMotion();
+  const ref = useScrollProgress<HTMLDivElement>("pass", undefined, !reduced);
   return (
     <div ref={ref} className="scene relative grid gap-10 lg:grid-cols-12 lg:items-end">
       <div className="relative lg:col-span-5">
-        <div className="px" style={{ ["--sy" as string]: "60px" }}>
-          <CinematicPhoto img={IMG.bedroom} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 40vw, 100vw" widths={[480, 800, 1200]} preset="vertical-pan" reveal="clip-up" parallaxY="50px" zoom={1.2} className="rounded-[4px]" />
-        </div>
-        <div className="px absolute -bottom-8 right-4 w-[min(78%,300px)] lg:-right-[18%]" style={{ ["--sy" as string]: "-80px", ["--pr" as string]: "1.5deg" }}>
-          <div data-reveal style={{ ["--rd" as string]: "300ms", ["--ry" as string]: "28px", ["--rr" as string]: "1.5deg" }}>
-          <div data-tilt>
-            <Fragment icon="home" kicker="Housing · listing" title="Room near campus" meta="Shared · walking distance" />
-          </div>
+        <CinematicPhoto
+          data-hover-media
+          data-sheen
+          img={IMG.bedroom}
+          preset={["wipe", "vertical-pan", "float"]}
+          params={{ from: "up", drift: [0, 70], pan: [0, -22], zoom: [1.3, 1.22], revealZoom: 0.16, window: [0.04, 0.34] }}
+          ratio="4/5"
+          crop={[4, 5]}
+          sizes="(min-width:1024px) 40vw, 100vw"
+          widths={[480, 800, 1200]}
+          frameClassName="rounded-[4px]"
+        />
+        <div className="px absolute -bottom-8 right-4 w-[min(78%,300px)] lg:-right-[18%]" style={{ ["--sy" as string]: "-120px" }}>
+          <div data-reveal style={{ ["--rd" as string]: "350ms", ["--rx" as string]: "40px", ["--rr" as string]: "4deg" }}>
+            <div data-tilt>
+              <Fragment icon="home" kicker="Housing · listing" title="Room near campus" meta="Shared · walking distance" />
+            </div>
           </div>
         </div>
       </div>
       <div className="relative lg:col-span-7 lg:pb-10">
         <Index n="06.1" label="Housing" />
-        <h3 className="display relative mt-6 text-[20vw] lg:-ml-[22%] lg:text-[12vw]" data-reveal-group>
-          <span className="line-mask"><span>Housing</span></span>
-        </h3>
+        {/* the word slides across the photograph's edge as the image travels the other way */}
+        <div className="px relative mt-6" style={{ ["--sx" as string]: "-90px" }}>
+          <h3 className="display text-[20vw] lg:-ml-[22%] lg:text-[12vw]" data-reveal-group>
+            <span className="line-mask"><span><Kinetic text="Housing" /></span></span>
+          </h3>
+        </div>
         <p className="mt-6 max-w-md text-[15px] leading-[1.6] text-stone" data-reveal>
           Rooms and flatmates near campus, posted by other students. Read the details before you go and see it.
         </p>
@@ -60,45 +74,46 @@ function Housing() {
   );
 }
 
-/* ── Rides: wide cinematic strip, slow horizontal pan, type inside ── */
+/* ── Rides: a letterbox that widens to full width while the camera pans sideways ── */
 function Rides() {
-  const ref = useScrollProgress<HTMLDivElement>("pass");
+  const reduced = usePrefersReducedMotion();
+  const ref = useScrollProgress<HTMLDivElement>("pass", undefined, !reduced);
   return (
     <div ref={ref} className="scene relative">
       <div className="flex items-end justify-between">
         <Index n="06.2" label="Rides" />
         <p className="caption hidden max-w-[16rem] text-right text-stone sm:block">Share the trip, and the cost, with people heading the same way.</p>
       </div>
-      <div className="relative mt-6 overflow-hidden rounded-[6px]" data-reveal style={{ ["--ry" as string]: "0px", ["--rs" as string]: "0.94" }}>
-        <div className="px" style={{ ["--sy" as string]: "-40px" }}>
-          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[6px]">
-          <CinematicPhoto
-            img={IMG.bicycle}
-            ratio="21/10"
-            crop={[21, 10]}
-            sizes="100vw"
-            widths={[800, 1280, 1800]}
-            preset="horizontal-pan"
-            reveal="none"
-            parallaxX="70px"
-            zoom={1.28}
-            className="max-sm:!aspect-[4/3]"
-          />
-          </div>
-        </div>
+      <div
+        data-sheen
+        className="relative mt-6 overflow-hidden rounded-[6px]"
+        style={{
+          ["--r" as string]: "clamp(0, calc((var(--p) - 0.05) / 0.3), 1)",
+          clipPath: "inset(calc((1 - var(--r)) * 16%) calc((1 - var(--r)) * 11%) round 6px)",
+        }}
+      >
+        <CinematicPhoto
+          img={IMG.bicycle}
+          scene="inherit"
+          preset="horizontal-pan"
+          params={{ pan: [-18, 0], zoom: [1.3, 1.2] }}
+          ratio="21/10"
+          crop={[21, 10]}
+          sizes="100vw"
+          widths={[800, 1280, 1800]}
+          frameClassName="max-sm:!aspect-[4/3]"
+        />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(21,19,15,.55),transparent_60%)]" />
-        <p
-          className="display absolute bottom-[6%] left-[4%] text-[22vw] text-ivory lg:text-[14vw] will-change-transform"
-          style={{ transform: "translate3d(calc((var(--p) - 0.5) * -30px), 0, 0)" }}
-        >
+        {/* type rides against the pan, so word and photograph cross each other */}
+        <p className="display px absolute bottom-[6%] left-[4%] whitespace-nowrap text-[22vw] text-ivory lg:text-[14vw]" style={{ ["--sx" as string]: "14vw" }}>
           <span data-magnet="60" className="inline-block">
             <Kinetic text="Rides" />
           </span>
           <span className="serif-accent text-[0.45em]"> home</span>
         </p>
       </div>
-      <div className="relative z-10 -mt-10 flex justify-end pr-4 lg:-mt-16 lg:pr-[6%]" data-reveal style={{ ["--rd" as string]: "150ms" }}>
-        <div className="w-[min(88%,340px)]">
+      <div className="px relative z-10 -mt-10 flex justify-end pr-4 lg:-mt-16 lg:pr-[6%]" style={{ ["--sy" as string]: "-70px" }}>
+        <div className="w-[min(88%,340px)]" data-reveal style={{ ["--rd" as string]: "200ms", ["--rx" as string]: "60px", ["--ry" as string]: "0px" }}>
           <div data-tilt>
             <Fragment icon="car" kicker="Ride · offering" title="Campus to railway station" meta="Friday evening · 2 seats" />
           </div>
@@ -108,11 +123,10 @@ function Rides() {
   );
 }
 
-/* ── Lost & found: layered collage, entries from different directions ── */
+/* ── Lost & found: a collage — prints arrive from opposite sides and rotate into place ── */
 function LostFound() {
-  const ref = useScrollProgress<HTMLDivElement>("pass");
   return (
-    <div ref={ref} className="scene grid gap-10 lg:grid-cols-12 lg:items-center">
+    <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
       <div className="lg:col-span-6 lg:col-start-1">
         <Index n="06.3" label="Lost & found" />
         <h3 className="mt-6 text-[17vw] leading-[0.86] tracking-[-0.03em] lg:text-[9vw]" data-reveal-group>
@@ -124,17 +138,37 @@ function LostFound() {
         </p>
       </div>
       <div className="relative h-[110vw] sm:h-[70vw] lg:col-span-5 lg:col-start-8 lg:h-[40vw]">
-        <div className="px absolute left-0 top-0 w-[58%]" style={{ ["--sy" as string]: "-70px", ["--sx" as string]: "-30px", ["--pr" as string]: "-3deg" }}>
-          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
-            <CinematicPhoto img={IMG.keys} ratio="1/1" crop={[1, 1]} sizes="(min-width:1024px) 24vw, 58vw" widths={[400, 700]} preset="stacked-reveal" reveal="scale" rotate={-3} delay={0} className="rounded-[4px]" />
-          </div>
-        </div>
-        <div className="px absolute bottom-[6%] right-0 w-[52%]" style={{ ["--sy" as string]: "90px", ["--sx" as string]: "30px", ["--pr" as string]: "2.5deg" }}>
-          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
-            <CinematicPhoto img={IMG.wallet} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 20vw, 52vw" widths={[400, 700]} preset="stacked-reveal" reveal="scale" rotate={2.5} delay={140} className="rounded-[4px]" />
-          </div>
-        </div>
-        <div className="absolute bottom-0 left-[4%] w-[min(80%,300px)]" data-reveal style={{ ["--rd" as string]: "200ms" }}>
+        <CinematicPhoto
+          data-hover-media
+          data-sheen
+          img={IMG.keys}
+          preset={["stacked-reveal", "parallax", "float"]}
+          params={{ enter: [-180, 60], settle: -11, rotate: -2, drift: [0, -80], pan: [0, 10], window: [0.03, 0.34] }}
+          ratio="1/1"
+          crop={[1, 1]}
+          sizes="(min-width:1024px) 24vw, 58vw"
+          widths={[400, 700]}
+          className="absolute left-0 top-0 w-[58%]"
+          frameClassName="rounded-[4px] shadow-[0_30px_50px_-28px_rgba(52,38,22,.55)]"
+        />
+        <CinematicPhoto
+          data-hover-media
+          data-sheen
+          img={IMG.wallet}
+          preset={["stacked-reveal", "parallax", "float"]}
+          params={{ enter: [200, 90], settle: 12, rotate: 3, drift: [0, 100], pan: [8, -8], window: [0.08, 0.4] }}
+          ratio="4/5"
+          crop={[4, 5]}
+          sizes="(min-width:1024px) 20vw, 52vw"
+          widths={[400, 700]}
+          className="absolute bottom-[6%] right-0 w-[52%]"
+          frameClassName="rounded-[4px] shadow-[0_30px_50px_-28px_rgba(52,38,22,.55)]"
+        />
+        <div
+          className="absolute bottom-0 left-[4%] w-[min(80%,300px)]"
+          data-reveal
+          style={{ ["--rd" as string]: "450ms", ["--rx" as string]: "-30px", ["--ry" as string]: "40px", ["--rr" as string]: "-6deg" }}
+        >
           <Fragment icon="search" kicker="Found · near library" title="Set of keys, blue tag" meta="Posted today" />
         </div>
       </div>
@@ -142,30 +176,52 @@ function LostFound() {
   );
 }
 
-/* ── Gigs + Projects: independent reveals, layered depth ── */
+/* ── Gigs + Projects: dark band; each photograph opens from its own edge, titles float a layer above ── */
 function GigsProjects() {
   const items = [
-    { n: "06.4", t: "Gigs", s: "Small paid tasks", d: "Find short jobs and freelance work from other students, or post one yourself.", img: IMG.sketch, icon: "briefcase" as IconName, f: ["Gig · design", "Poster for a club event", "Short task · open"], preset: "zoom-reveal" as const, reveal: "clip-up" as const },
-    { n: "06.5", t: "Projects", s: "& teams", d: "Describe a project, list the skills you need, and find people who want to build it with you.", img: IMG.stickyNotes, icon: "layers" as IconName, f: ["Team · looking for", "Frontend + ML for a project", "2 roles open"], preset: "parallax" as const, reveal: "wipe-left" as const },
+    { n: "06.4", t: "Gigs", s: "Small paid tasks", d: "Find short jobs and freelance work from other students, or post one yourself.", img: IMG.sketch, icon: "briefcase" as IconName, f: ["Gig · design", "Poster for a club event", "Short task · open"], from: "right" as const, pan: [-10, 8] as [number, number] },
+    { n: "06.5", t: "Projects", s: "& teams", d: "Describe a project, list the skills you need, and find people who want to build it with you.", img: IMG.stickyNotes, icon: "layers" as IconName, f: ["Team · looking for", "Frontend + ML for a project", "2 roles open"], from: "up" as const, pan: [0, 16] as [number, number] },
   ];
   return (
     <div data-nav-dark className="relative -mx-5 overflow-hidden rounded-[28px] bg-charcoal px-5 py-20 text-ivory sm:-mx-6 sm:px-6 lg:-mx-10 lg:rounded-[48px] lg:px-10 lg:py-28">
       <div className="grid gap-16 lg:grid-cols-2 lg:gap-10">
         {items.map((it, i) => (
-          <article key={it.t} data-cursor="media" className={i === 1 ? "lg:mt-40" : ""} data-reveal style={{ ["--rd" as string]: `${i * 120}ms` }}>
-            <p className="eyebrow flex items-center gap-3 text-ivory/50">
+          <article key={it.t} className={i === 1 ? "lg:mt-40" : ""}>
+            <p className="eyebrow flex items-center gap-3 text-ivory/50" data-reveal>
               <span className="text-ivory">{it.n}</span>
               <span className="h-px w-10 bg-ivory/25" />
               {it.t}
             </p>
-            <div className="relative mt-8">
-              <CinematicPhoto img={it.img} ratio={i === 0 ? "5/4" : "4/5"} crop={i === 0 ? [5, 4] : [4, 5]} sizes="(min-width:1024px) 40vw, 100vw" widths={[480, 800, 1100]} preset={it.preset} reveal={it.reveal} delay={i * 140} parallaxY="40px" className="w-[88%] rounded-[4px]" />
-              <h3 className="display absolute -bottom-[0.18em] right-0 text-[22vw] text-ivory lg:text-[9vw]">{it.t}</h3>
+            <CinematicPhoto
+              data-hover-media
+              data-sheen
+              img={it.img}
+              preset={["wipe", "parallax"]}
+              params={{ from: it.from, pan: it.pan, zoom: [1.32, 1.18], revealZoom: 0.2, window: [0.05, 0.36] }}
+              ratio={i === 0 ? "5/4" : "4/5"}
+              crop={i === 0 ? [5, 4] : [4, 5]}
+              sizes="(min-width:1024px) 40vw, 100vw"
+              widths={[480, 800, 1100]}
+              className="mt-8"
+              frameClassName="w-[88%] rounded-[4px] bg-ink"
+            >
+              {/* the title lives on the photograph's own scroll progress, one depth layer in front;
+                  difference blend (as in the hero) keeps it legible where it crosses the image */}
+              <h3
+                className="display px absolute -bottom-[0.18em] right-0 text-[22vw] text-ivory mix-blend-difference lg:text-[9vw]"
+                style={{ ["--sy" as string]: "-90px", ["--sx" as string]: i === 0 ? "40px" : "-40px" }}
+              >
+                <Kinetic text={it.t} />
+              </h3>
+            </CinematicPhoto>
+            <div data-reveal style={{ ["--rd" as string]: "120ms" }}>
+              <p className="serif-accent mt-10 text-3xl text-ivory/60">{it.s}</p>
+              <p className="mt-3 max-w-sm text-[15px] leading-[1.6] text-ivory/70">{it.d}</p>
             </div>
-            <p className="serif-accent mt-10 text-3xl text-ivory/60">{it.s}</p>
-            <p className="mt-3 max-w-sm text-[15px] leading-[1.6] text-ivory/70">{it.d}</p>
-            <div className="mt-6 max-w-[320px]">
-              <Fragment icon={it.icon} kicker={it.f[0]} title={it.f[1]} meta={it.f[2]} />
+            <div className="mt-6 max-w-[320px]" data-reveal style={{ ["--rd" as string]: "260ms", ["--rx" as string]: i === 0 ? "-30px" : "30px", ["--rr" as string]: i === 0 ? "-4deg" : "4deg" }}>
+              <div data-tilt>
+                <Fragment icon={it.icon} kicker={it.f[0]} title={it.f[1]} meta={it.f[2]} />
+              </div>
             </div>
           </article>
         ))}
@@ -174,34 +230,40 @@ function GigsProjects() {
   );
 }
 
-/* ── Notices: paper-like movement, gentle rotation and settling ── */
+/* ── Notices: pinned paper slips that drift up and settle into their resting angle with scroll ── */
 function Notices() {
+  const reduced = usePrefersReducedMotion();
+  const ref = useScrollProgress<HTMLUListElement>("pass", undefined, !reduced);
   const slips = [
-    { t: "Library hours", d: "Extended during exam weeks", r: "-3deg", c: "bg-paper" },
-    { t: "Club recruitment", d: "Applications open this week", r: "2deg", c: "bg-beige" },
-    { t: "Workshop", d: "Seats limited — register early", r: "-1deg", c: "bg-paper" },
-    { t: "Exam form", d: "Last date reminder", r: "3deg", c: "bg-dune/60" },
+    { t: "Library hours", d: "Extended during exam weeks", r: "-3deg", er: "-9deg", ox: "-50px", c: "bg-paper" },
+    { t: "Club recruitment", d: "Applications open this week", r: "2deg", er: "10deg", ox: "60px", c: "bg-beige" },
+    { t: "Workshop", d: "Seats limited — register early", r: "-1deg", er: "7deg", ox: "-30px", c: "bg-paper" },
+    { t: "Exam form", d: "Last date reminder", r: "3deg", er: "-8deg", ox: "40px", c: "bg-dune/60" },
   ];
   return (
     <div className="grid gap-10 lg:grid-cols-12 lg:items-start">
       <div className="lg:col-span-4">
         <Index n="06.6" label="Events & notices" />
         <h3 className="display mt-6 text-[18vw] lg:text-[7vw]" data-reveal-group>
-          <span className="line-mask"><span>Notices,</span></span>
-          <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "100ms" }}>noticed.</span></span>
+          <span className="line-mask"><span><Kinetic text="Notices," /></span></span>
+          <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "100ms" }}><Kinetic text="noticed." /></span></span>
         </h3>
         <p className="mt-6 max-w-sm text-[15px] leading-[1.6] text-stone" data-reveal>
           Announcements and reminders together in one place, so they don't get lost in group chats.
         </p>
         <p className="caption mt-4 text-stone">Example notices for illustration.</p>
       </div>
-      <ul className="grid grid-cols-2 gap-4 sm:gap-6 lg:col-span-7 lg:col-start-6">
+      <ul ref={ref} className="scene grid grid-cols-2 gap-4 sm:gap-6 lg:col-span-7 lg:col-start-6">
         {slips.map((s, i) => (
           <li
             key={s.t}
-            className={`paper-lift ${s.c} relative rounded-[3px] p-5 shadow-[0_18px_30px_-20px_rgba(52,38,22,.45)] sm:p-7 ${i % 2 ? "mt-10" : ""}`}
-            style={{ rotate: s.r, ["--rd" as string]: `${i * 110}ms`, ["--ry" as string]: "30px", ["--rr" as string]: s.r }}
-            data-reveal
+            className={`paper-lift paper ${s.c} relative rounded-[3px] p-5 shadow-[0_18px_30px_-20px_rgba(52,38,22,.45)] sm:p-7 ${i % 2 ? "mt-10" : ""}`}
+            style={{
+              ["--rot" as string]: s.r,
+              ["--er" as string]: s.er,
+              ["--ox" as string]: s.ox,
+              ["--s0" as string]: (0.06 + i * 0.045).toFixed(3),
+            }}
           >
             <span className="absolute left-1/2 top-3 size-2.5 -translate-x-1/2 rounded-full bg-clay shadow-sm" aria-hidden="true" />
             <Icon name="megaphone" size={18} className="mt-3 text-stone" />

@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useScrollProgress } from "../motion/scroll";
 import { BrowserFrame } from "../components/DeviceFrames";
 import { TimetablePreview } from "../components/TimetablePreview";
-import { Photo } from "../components/Photo";
+import { CinematicPhoto } from "../components/CinematicPhoto";
+import { usePrefersReducedMotion } from "../motion/reveal";
 import { Icon } from "../components/Icon";
 import { IMG, ROUTES } from "../data";
 
 export function Academic() {
-  const ref = useScrollProgress<HTMLElement>("pass");
+  const reduced = usePrefersReducedMotion();
+  const ref = useScrollProgress<HTMLElement>("pass", undefined, !reduced);
   const [divLabel, setDivLabel] = useState("SE · A");
 
   return (
@@ -51,29 +53,48 @@ export function Academic() {
 
           {/* layered product composition */}
           <div className="relative lg:col-span-6 lg:min-h-[760px]">
-            {/* campus photograph behind the product */}
-            <div className="px absolute -right-5 -top-16 z-0 w-[70%] sm:-right-6 lg:-right-10 lg:-top-24 lg:w-[78%]" style={{ ["--sy" as string]: "-140px" }}>
-              <Photo img={IMG.hall} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 38vw, 70vw" widths={[480, 800, 1100]} className="rounded-[4px]" />
+            {/* campus photograph behind the product: wipes down, drifts against the page, pans inside its frame */}
+            <CinematicPhoto
+              img={IMG.hall}
+              preset={["wipe", "parallax", "float"]}
+              params={{ from: "down", drift: [0, -150], pan: [-6, 14], zoom: [1.3, 1.16], revealZoom: 0.16, window: [0.04, 0.32] }}
+              ratio="4/5"
+              crop={[4, 5]}
+              sizes="(min-width:1024px) 38vw, 70vw"
+              widths={[480, 800, 1100]}
+              className="absolute -right-5 -top-16 z-0 w-[70%] sm:-right-6 lg:-right-10 lg:-top-24 lg:w-[78%]"
+              frameClassName="rounded-[4px]"
+            >
               <p className="caption mt-2 text-right text-stone">Illustrative photography</p>
+            </CinematicPhoto>
+
+            {/* main frame: unveiled through a rising mask (one-off, so the controls are never half-clipped) */}
+            <div className="relative z-10 pt-[38%] lg:absolute lg:-left-[6%] lg:top-[18%] lg:w-[86%] lg:pt-0" data-reveal-group>
+              <div className="mask-reveal">
+                <BrowserFrame url={`${ROUTES.timetable} · ${divLabel}`}>
+                  <TimetablePreview onDivision={setDivLabel} />
+                </BrowserFrame>
+              </div>
             </div>
 
-            {/* main frame */}
-            <div className="relative z-10 pt-[38%] lg:absolute lg:-left-[6%] lg:top-[18%] lg:w-[86%] lg:pt-0" data-reveal style={{ ["--ry" as string]: "80px" }}>
-              <BrowserFrame url={`${ROUTES.timetable} · ${divLabel}`}>
-                <TimetablePreview onDivision={setDivLabel} />
-              </BrowserFrame>
-            </div>
-
-            {/* floating schedule fragments */}
-            <div className="px absolute -left-2 top-[30%] z-20 hidden sm:block lg:-left-[16%] lg:top-[10%]" style={{ ["--sy" as string]: "120px" }}>
-              <div className="rotate-[-3deg] rounded-2xl bg-ivory px-4 py-3 shadow-[0_24px_40px_-24px_rgba(52,38,22,.5)] ring-1 ring-ink/5" data-reveal style={{ ["--rd" as string]: "200ms" }}>
+            {/* floating schedule fragments: staggered, each settling from its own angle, on separate depth planes */}
+            <div className="px absolute -left-2 top-[30%] z-20 hidden sm:block lg:-left-[16%] lg:top-[10%]" style={{ ["--sy" as string]: "150px" }}>
+              <div
+                className="rotate-[-3deg] rounded-2xl bg-ivory px-4 py-3 shadow-[0_24px_40px_-24px_rgba(52,38,22,.5)] ring-1 ring-ink/5"
+                data-reveal
+                style={{ ["--rd" as string]: "500ms", ["--rx" as string]: "-40px", ["--ry" as string]: "30px", ["--rr" as string]: "-9deg" }}
+              >
                 <p className="eyebrow text-clay">Lab · Batch B2</p>
                 <p className="mt-1 text-sm font-semibold">14:00 – 16:00</p>
                 <p className="caption text-stone">Two-hour slot, batch-wise</p>
               </div>
             </div>
-            <div className="px absolute -bottom-6 right-2 z-20 lg:-bottom-2 lg:right-[2%]" style={{ ["--sy" as string]: "-90px" }}>
-              <div className="flex items-center gap-3 rounded-full bg-ink py-2 pl-2 pr-5 text-ivory shadow-[0_24px_40px_-20px_rgba(20,18,15,.6)]" data-reveal style={{ ["--rd" as string]: "320ms" }}>
+            <div className="px absolute -bottom-6 right-2 z-20 lg:-bottom-2 lg:right-[2%]" style={{ ["--sy" as string]: "-110px" }}>
+              <div
+                className="flex items-center gap-3 rounded-full bg-ink py-2 pl-2 pr-5 text-ivory shadow-[0_24px_40px_-20px_rgba(20,18,15,.6)]"
+                data-reveal
+                style={{ ["--rd" as string]: "760ms", ["--rx" as string]: "50px", ["--ry" as string]: "20px", ["--rr" as string]: "5deg" }}
+              >
                 <span className="grid size-9 place-items-center rounded-full bg-app-accent text-ink">
                   <Icon name="clock" size={16} />
                 </span>

@@ -4,16 +4,28 @@ import { useScrollProgress } from "../motion/scroll";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { PhoneFrame } from "../components/DeviceFrames";
 import { CommunityScreen } from "../components/AppScreens";
-import { Photo } from "../components/Photo";
+import { CinematicPhoto, CrossfadeStack, type CineDirection } from "../components/CinematicPhoto";
 import { COMMUNITY_STEPS, IMG } from "../data";
 
 function CommunityIntro() {
-  const ref = useScrollProgress<HTMLDivElement>("pass");
-  const tiles = [
-    { img: IMG.guitar, ratio: "3/4", crop: [3, 4] as [number, number], w: "lg:w-[17vw] w-[42vw]", sy: "-120px", mt: "lg:mt-[10vh]", cap: "Music" },
-    { img: IMG.soldering, ratio: "4/5", crop: [4, 5] as [number, number], w: "lg:w-[23vw] w-[50vw]", sy: "-260px", mt: "lg:mt-[26vh] mt-[14vh]", cap: "Making things" },
-    { img: IMG.camera, ratio: "1/1", crop: [1, 1] as [number, number], w: "lg:w-[13vw] w-[34vw]", sy: "-60px", mt: "lg:mt-0 mt-[2vh]", cap: "Photography" },
-    { img: IMG.chess, ratio: "3/4", crop: [3, 4] as [number, number], w: "lg:w-[16vw] w-[40vw]", sy: "-200px", mt: "lg:mt-[18vh] mt-[8vh]", cap: "Strategy" },
+  const reduced = usePrefersReducedMotion();
+  const ref = useScrollProgress<HTMLDivElement>("pass", undefined, !reduced);
+  // each tile: its own edge to enter from, its own depth (drift) and its own camera move
+  const tiles: Array<{
+    img: (typeof IMG)[keyof typeof IMG];
+    ratio: string;
+    crop: [number, number];
+    w: string;
+    mt: string;
+    cap: string;
+    from: CineDirection;
+    drift: number;
+    pan: [number, number];
+  }> = [
+    { img: IMG.guitar, ratio: "3/4", crop: [3, 4], w: "lg:w-[17vw] w-[42vw]", mt: "lg:mt-[10vh]", cap: "Music", from: "up", drift: -120, pan: [0, 14] },
+    { img: IMG.soldering, ratio: "4/5", crop: [4, 5], w: "lg:w-[23vw] w-[50vw]", mt: "lg:mt-[26vh] mt-[14vh]", cap: "Making things", from: "right", drift: -260, pan: [-12, 8] },
+    { img: IMG.camera, ratio: "1/1", crop: [1, 1], w: "lg:w-[13vw] w-[34vw]", mt: "lg:mt-0 mt-[2vh]", cap: "Photography", from: "down", drift: -60, pan: [0, -12] },
+    { img: IMG.chess, ratio: "3/4", crop: [3, 4], w: "lg:w-[16vw] w-[40vw]", mt: "lg:mt-[18vh] mt-[8vh]", cap: "Strategy", from: "left", drift: -200, pan: [12, 10] },
   ];
   return (
     <div ref={ref} className="scene relative overflow-clip pb-4 pt-28 lg:pb-0 lg:pt-36">
@@ -34,12 +46,22 @@ function CommunityIntro() {
       {/* staggered photography passing beneath the type */}
       <div className="relative z-0 -mt-[8vw] flex flex-wrap items-start justify-between gap-y-6 px-5 sm:px-6 lg:flex-nowrap lg:px-10">
         {tiles.map((t, i) => (
-          <figure key={t.cap} className={cn("px", t.w, t.mt, i === 2 && "max-lg:ml-auto")} style={{ ["--sy" as string]: t.sy }}>
-            <Photo img={t.img} ratio={t.ratio} crop={t.crop} sizes="(min-width:1024px) 22vw, 50vw" widths={[360, 640, 900]} className="rounded-[4px]" />
-            <figcaption className="caption mt-2 flex justify-between text-ivory/55">
-              <span>{t.cap}</span>
-              <span>0{i + 1}</span>
-            </figcaption>
+          <figure key={t.cap} className={cn(t.w, t.mt, i === 2 && "max-lg:ml-auto")}>
+            <CinematicPhoto
+              img={t.img}
+              preset={["wipe", "parallax", "float"]}
+              params={{ from: t.from, drift: [0, t.drift], pan: t.pan, zoom: [1.3, 1.14], revealZoom: 0.18, window: [0.02 + i * 0.02, 0.3 + i * 0.03] }}
+              ratio={t.ratio}
+              crop={t.crop}
+              sizes="(min-width:1024px) 22vw, 50vw"
+              widths={[360, 640, 900]}
+              frameClassName="rounded-[4px] bg-charcoal"
+            >
+              <figcaption className="caption mt-2 flex justify-between text-ivory/55">
+                <span>{t.cap}</span>
+                <span>0{i + 1}</span>
+              </figcaption>
+            </CinematicPhoto>
           </figure>
         ))}
       </div>
@@ -90,7 +112,11 @@ function CommunitySequence() {
   };
 
   return (
-    <div ref={ref} className="scene relative" style={{ height: `${n * 90 + 10}vh` }}>
+    <div
+      ref={ref}
+      className="scene relative h-[calc(var(--n)*72vh+10vh)] lg:h-[calc(var(--n)*90vh+10vh)]"
+      style={{ ["--n" as string]: n, ["--in" as string]: "clamp(0, calc(var(--p) / 0.07), 1)" }}
+    >
       <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden">
         <div className="mx-auto grid w-full max-w-[1680px] grid-cols-12 items-center gap-x-4 px-5 pt-14 sm:px-6 lg:px-10">
           {/* left: counter + title */}
@@ -131,9 +157,15 @@ function CommunitySequence() {
 
           {/* centre: the phone stays, its screen evolves */}
           <div className="relative col-span-7 col-start-6 mt-4 flex justify-center max-lg:col-span-12 max-lg:col-start-1 lg:col-span-3 lg:col-start-6 lg:mt-0">
-            <PhoneFrame className="relative z-10 w-[min(54vw,40svh)] lg:w-[min(19vw,40svh)]" label={`Campus+ ${step.title} screen (demonstration content)`}>
-              <CommunityScreen step={step.key} />
-            </PhoneFrame>
+            {/* the phone settles into place as the sequence pins, then stays put */}
+            <div
+              className="rm-static relative z-10 will-change-transform"
+              style={{ transform: "translate3d(0, calc((1 - var(--in)) * 9vh), 0) scale(calc(0.92 + var(--in) * 0.08))" }}
+            >
+              <PhoneFrame className="w-[min(54vw,40svh)] lg:w-[min(19vw,40svh)]" label={`Campus+ ${step.title} screen (demonstration content)`}>
+                <CommunityScreen step={step.key} />
+              </PhoneFrame>
+            </div>
             {/* progress rail */}
             <div className="absolute -right-1 top-1/2 hidden h-40 w-px -translate-y-1/2 bg-ivory/15 sm:block lg:-right-8">
               <span
@@ -145,19 +177,17 @@ function CommunitySequence() {
 
           {/* right: swapping photograph */}
           <div className="absolute bottom-[6vh] left-[4vw] z-0 w-[30vw] lg:static lg:col-span-3 lg:col-start-10 lg:w-auto">
-            <div className="relative aspect-[3/4] overflow-hidden rounded-[4px] bg-charcoal">
-              {COMMUNITY_STEPS.map((s, i) => (
-                <div
-                  key={s.key}
-                  className="absolute inset-0 transition-[opacity,transform] duration-[900ms] ease-[var(--ease-editorial)]"
-                  style={{ opacity: i === idx ? 1 : 0, transform: i === idx ? "scale(1)" : "scale(1.06)" }}
-                  aria-hidden={i !== idx}
-                >
-                  <Photo img={s.photo} ratio="3/4" crop={[3, 4]} sizes="(min-width:1024px) 22vw, 30vw" widths={[360, 640]} className="size-full" />
-                </div>
-              ))}
-            </div>
-            <p className="caption mt-2 hidden text-ivory/45 lg:block">{step.photo.alt}. Illustrative.</p>
+            {/* shots swap with a wipe that follows the scroll direction; every shot keeps panning with the sequence */}
+            <CrossfadeStack
+              images={COMMUNITY_STEPS.map((c) => c.photo)}
+              index={idx}
+              ratio="3/4"
+              crop={[3, 4]}
+              sizes="(min-width:1024px) 22vw, 30vw"
+              widths={[360, 640]}
+              className="rounded-[4px] bg-charcoal"
+            />
+            <p key={step.key + "cap"} className="soft-in caption mt-2 hidden text-ivory/45 lg:block">{step.photo.alt}. Illustrative.</p>
           </div>
         </div>
       </div>

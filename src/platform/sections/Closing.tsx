@@ -1,37 +1,62 @@
 import { useScrollProgress } from "../motion/scroll";
-import { Photo } from "../components/Photo";
+import { CinematicPhoto } from "../components/CinematicPhoto";
+import { usePrefersReducedMotion } from "../motion/reveal";
 import { Wordmark } from "../components/BrandMark";
 import { Icon } from "../components/Icon";
 import { useSmoothNav } from "../components/ShowcaseNav";
 import { IMG, NAV, ROUTES } from "../data";
 
 export function Closing() {
-  const ref = useScrollProgress<HTMLElement>("pass");
+  const reduced = usePrefersReducedMotion();
+  const ref = useScrollProgress<HTMLElement>("pass", undefined, !reduced);
+  // the footer is its own scene: 0 when its top edge appears, 1 once it has fully arrived
+  const footerRef = useScrollProgress<HTMLElement>("enter", undefined, !reduced);
   const go = useSmoothNav();
 
   return (
     <section id="start" ref={ref} aria-labelledby="closing-title" className="scene relative overflow-clip bg-ivory outline-none">
       {/* ── ivory statement ── */}
-      <div className="relative mx-auto max-w-[1680px] px-5 pb-[22vw] pt-28 sm:px-6 lg:px-10 lg:pb-[14vw] lg:pt-40">
+      <div className="relative mx-auto max-w-[1680px] px-5 pb-[26vw] pt-28 sm:px-6 lg:px-10 lg:pb-[18vw] lg:pt-40">
         <p className="eyebrow text-stone" data-reveal>
           <span className="text-ink">(07)</span> Get started
         </p>
         <h2 id="closing-title" className="display relative z-10 mt-8 text-[18vw] lg:text-[11.6vw]" data-reveal-group>
-          <span className="line-mask"><span>Make your</span></span>
-          <span className="line-mask">
-            <span style={{ ["--rd" as string]: "100ms" }}>
-              campus <span className="serif-accent">yours.</span>
+          {/* as in the opening, the two lines travel in opposite directions */}
+          <span className="px block" style={{ ["--sx" as string]: "-7vw" }}>
+            <span className="line-mask"><span>Make your</span></span>
+          </span>
+          <span className="px block" style={{ ["--sx" as string]: "5vw" }}>
+            <span className="line-mask">
+              <span style={{ ["--rd" as string]: "100ms" }}>
+                campus <span className="serif-accent">yours.</span>
+              </span>
             </span>
           </span>
         </h2>
 
-        {/* floating photographs around the statement */}
-        <div className="px absolute right-[6vw] top-[16vh] z-0 hidden w-[14vw] lg:block" style={{ ["--sy" as string]: "-160px" }}>
-          <Photo img={IMG.concreteDawn} ratio="3/4" crop={[3, 4]} sizes="14vw" widths={[300, 500]} className="rounded-[4px]" />
-        </div>
-        <div className="px absolute bottom-[20vw] right-[24vw] z-20 hidden w-[9vw] lg:block" style={{ ["--sy" as string]: "-60px" }}>
-          <Photo img={IMG.libraryLamp} ratio="1/1" crop={[1, 1]} sizes="9vw" widths={[200, 360]} className="rounded-[4px]" />
-        </div>
+        {/* slow-moving architecture around the statement: each shot wipes open, tilts inside its frame and floats on its own plane */}
+        <CinematicPhoto
+          img={IMG.concreteDawn}
+          preset={["wipe", "vertical-pan", "float"]}
+          params={{ from: "down", drift: [0, -190], pan: [0, -24], zoom: [1.34, 1.24], revealZoom: 0.18, window: [0.04, 0.32] }}
+          ratio="3/4"
+          crop={[3, 4]}
+          sizes="(min-width:1024px) 14vw, 56vw"
+          widths={[300, 500, 800]}
+          className="z-0 ml-auto mt-10 w-[56%] lg:absolute lg:right-[6vw] lg:top-[16vh] lg:mt-0 lg:w-[14vw]"
+          frameClassName="rounded-[4px]"
+        />
+        <CinematicPhoto
+          img={IMG.libraryLamp}
+          preset={["stacked-reveal", "horizontal-pan", "float"]}
+          params={{ enter: [90, 50], settle: 9, rotate: -2, drift: [0, -70], pan: [-14, 0], window: [0.1, 0.4] }}
+          ratio="1/1"
+          crop={[1, 1]}
+          sizes="9vw"
+          widths={[200, 360]}
+          className="bottom-[24vw] right-[24vw] z-20 hidden w-[9vw] lg:absolute lg:block"
+          frameClassName="rounded-[4px]"
+        />
 
         <div className="relative z-10 mt-12 flex flex-col gap-8 lg:mt-16 lg:flex-row lg:items-end lg:justify-between">
           <p className="max-w-md text-[15px] leading-[1.6] text-stone" data-reveal>
@@ -56,14 +81,26 @@ export function Closing() {
       </div>
 
       {/* ── curved boundary: a dark dome that rises (and flattens) as you arrive ── */}
-      <footer data-nav-dark className="relative bg-ink text-ivory">
+      <footer
+        ref={footerRef}
+        data-nav-dark
+        className="scene relative bg-ink text-ivory"
+        style={{
+          ...(reduced ? { ["--p" as string]: 1 } : null),
+          ["--f1" as string]: "clamp(0, calc((var(--p) - 0.12) / 0.4), 1)",
+          ["--f2" as string]: "clamp(0, calc((var(--p) - 0.3) / 0.5), 1)",
+        }}
+      >
         <div
           aria-hidden="true"
-          className="rm-static absolute inset-x-0 bottom-[calc(100%-1px)] h-[18vw] origin-bottom rounded-t-[50%] bg-ink"
-          style={{ transform: "scaleY(calc(1.15 - var(--p) * 0.75))" }}
+          className="rm-static absolute inset-x-0 bottom-[calc(100%-1px)] h-[20vw] origin-bottom rounded-t-[50%] bg-ink will-change-transform lg:h-[14vw]"
+          style={{ transform: "scaleY(calc(1 - var(--p) * 0.6))" }}
         />
         <div className="relative mx-auto max-w-[1680px] px-5 pt-6 sm:px-6 lg:px-10">
-          <div className="grid gap-12 border-b border-ivory/10 pb-14 lg:grid-cols-12">
+          <div
+            className="rm-static rm-visible grid gap-12 border-b border-ivory/10 pb-14 lg:grid-cols-12"
+            style={{ opacity: "var(--f1)", transform: "translate3d(0, calc((1 - var(--f1)) * 40px), 0)" }}
+          >
             <div className="lg:col-span-4">
               <Wordmark tone="light" />
               <p id="independence" className="mt-6 max-w-sm text-[14px] leading-[1.6] text-ivory/60">
@@ -105,7 +142,11 @@ export function Closing() {
             <span>Photography: Pexels contributors, used for illustration. Not PCCOE photography.</span>
           </div>
           {/* oversized wordmark, cropped by the page edge */}
-          <p className="display pointer-events-none -mb-[9vw] mt-10 select-none whitespace-nowrap text-center text-[23vw] leading-[0.78] text-ivory/[0.07]" aria-hidden="true">
+          <p
+            className="display rm-static pointer-events-none -mb-[9vw] mt-10 select-none whitespace-nowrap text-center text-[23vw] leading-[0.78] text-ivory/[0.07] will-change-transform"
+            style={{ transform: "translate3d(0, calc((1 - var(--f2)) * 42%), 0) scale(calc(1.08 - var(--f2) * 0.08))" }}
+            aria-hidden="true"
+          >
             Campus+
           </p>
         </div>

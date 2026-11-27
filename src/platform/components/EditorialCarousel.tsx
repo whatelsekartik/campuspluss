@@ -3,6 +3,8 @@ import { cn } from "@/utils/cn";
 import { Photo } from "./Photo";
 import { Icon } from "./Icon";
 import type { MarketCategory } from "../data";
+import { useScrollProgress } from "../motion/scroll";
+import { usePrefersReducedMotion } from "../motion/reveal";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -12,6 +14,10 @@ const pad = (n: number) => String(n).padStart(2, "0");
  * - Pointer (touch + mouse) drag with threshold and live drag offset
  * - Arrow keys / Home / End when the region has focus
  * - Only the current and adjacent slides request images
+ * - Motion: every photograph sits on its own "camera" that travels slower than
+ *   its slide (--i / --pos, pure CSS) and settles from a slight zoom when it
+ *   becomes active; the secondary prints are laid down with a rotational settle;
+ *   the stage itself opens with scroll through the shared engine.
  */
 export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
   const [index, setIndex] = useState(0);
@@ -20,6 +26,8 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
   const start = useRef<{ x: number; y: number; id: number; locked: boolean | null } | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const n = slides.length;
+  const reduced = usePrefersReducedMotion();
+  const sceneRef = useScrollProgress<HTMLDivElement>("pass", undefined, !reduced);
 
   const goTo = useCallback(
     (i: number) => {
@@ -67,6 +75,8 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
 
   // keep transitions snappy but disable them while dragging
   const dragging = drag !== 0;
+  // fractional slide position (index minus drag), consumed by each slide's camera in CSS
+  const pos = index - (dragging ? drag / (stageRef.current?.offsetWidth || 1) : 0);
   const slide = slides[index];
   const following = slides[(index + 1) % n];
 
@@ -76,12 +86,13 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
 
   return (
     <div
+      ref={sceneRef}
       role="region"
       aria-roledescription="carousel"
       aria-label="Marketplace categories"
       tabIndex={0}
       onKeyDown={onKey}
-      className="relative outline-none focus-visible:ring-2 focus-visible:ring-clay focus-visible:ring-offset-4 focus-visible:ring-offset-sand"
+      className="scene relative outline-none focus-visible:ring-2 focus-visible:ring-clay focus-visible:ring-offset-4 focus-visible:ring-offset-sand"
     >
       <p className="sr-only" aria-live="polite">{announce}</p>
 
@@ -95,22 +106,33 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
             onPointerUp={endDrag}
             onPointerCancel={endDrag}
             className="relative aspect-[4/5] cursor-grab touch-pan-y select-none overflow-hidden rounded-[6px] bg-dune active:cursor-grabbing sm:aspect-[16/11] lg:aspect-[16/10.5]"
+            style={{
+              // the stage opens up as the carousel scrolls into view
+              ["--r" as string]: "clamp(0, calc((var(--p) - 0.05) / 0.25), 1)",
+              clipPath: "inset(calc((1 - var(--r)) * 9%) calc((1 - var(--r)) * 5%) round 6px)",
+            }}
           >
             <div
-              className={cn("flex h-full", !dragging && "transition-transform duration-[900ms] ease-[var(--ease-editorial)]")}
-              style={{ transform: `translate3d(calc(${-index * 100}% + ${drag}px), 0, 0)` }}
+              className={cn("flex h-full", dragging ? "car-drag" : "transition-transform duration-[900ms] ease-[var(--ease-editorial)]")}
+              style={{ transform: `translate3d(calc(${-index * 100}% + ${drag}px), 0, 0)`, ["--pos" as string]: pos }}
             >
               {slides.map((s, i) => (
                 <div
                   key={s.id}
-                  className="relative h-full w-full shrink-0"
+                  className="relative h-full w-full shrink-0 overflow-hidden"
+                  style={{ ["--i" as string]: i }}
+                  data-active={i === index ? "" : undefined}
                   role="group"
                   aria-roledescription="slide"
                   aria-label={`${i + 1} of ${n}: ${s.title}`}
                   aria-hidden={i !== index}
                 >
                   {seen.has(i) && (
-                    <Photo img={s.backdrop} sizes="(min-width:1024px) 64vw, 100vw" widths={[640, 1024, 1600]} className="absolute inset-0" imgClassName="pointer-events-none" />
+                    <div className="car-cam">
+                      <div className="car-zoom absolute inset-0">
+                        <Photo img={s.backdrop} sizes="(min-width:1024px) 64vw, 100vw" widths={[640, 1024, 1600]} className="absolute inset-0" imgClassName="pointer-events-none" />
+                      </div>
+                    </div>
                   )}
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(21,19,15,.45))]" />
                 </div>
@@ -125,12 +147,23 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
           </div>
 
           {/* layered image stack overlapping the stage edge */}
-          <div className="pointer-events-none absolute -bottom-10 right-4 z-10 w-[38%] sm:w-[28%] lg:-bottom-14 lg:-left-[12%] lg:right-auto lg:w-[26%]" aria-hidden="true">
+          <div
+            className="px pointer-events-none absolute -bottom-10 right-4 z-10 w-[38%] sm:w-[28%] lg:-bottom-14 lg:-left-[12%] lg:right-auto lg:w-[26%]"
+            style={{ ["--sy" as string]: "-90px" }}
+            aria-hidden="true"
+          >
             <div key={slide.id + "s"} className="relative">
-              <div className="soft-in rotate-[-4deg] shadow-[0_30px_50px_-25px_rgba(52,38,22,.6)]">
+              {/* prints laid onto the page: each slides in from its own side and rotates into its resting angle */}
+              <div
+                className="place shadow-[0_30px_50px_-25px_rgba(52,38,22,.6)]"
+                style={{ ["--rot" as string]: "-4deg", ["--fr0" as string]: "7deg", ["--fx0" as string]: "-46px", ["--fy0" as string]: "54px", ["--d" as string]: "120ms" }}
+              >
                 <Photo img={slide.stack[0]} ratio="4/5" crop={[4, 5]} sizes="18vw" widths={[300, 500]} className="rounded-[4px] ring-[6px] ring-paper" />
               </div>
-              <div className="soft-in absolute -right-[38%] -top-[34%] w-[70%] rotate-[5deg] shadow-[0_30px_50px_-25px_rgba(52,38,22,.6)]" style={{ ["--d" as string]: "120ms" }}>
+              <div
+                className="place absolute -right-[38%] -top-[34%] w-[70%] shadow-[0_30px_50px_-25px_rgba(52,38,22,.6)]"
+                style={{ ["--rot" as string]: "5deg", ["--fr0" as string]: "-8deg", ["--fx0" as string]: "52px", ["--fy0" as string]: "-34px", ["--d" as string]: "300ms" }}
+              >
                 <Photo img={slide.stack[1]} ratio="1/1" crop={[1, 1]} sizes="12vw" widths={[240, 400]} className="rounded-[4px] ring-[6px] ring-paper" />
               </div>
             </div>

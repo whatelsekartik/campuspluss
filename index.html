@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Campus+ Platform — Timetables, clubs, marketplace & campus life for PCCOE students</title>
+    <meta
+      name="description"
+      content="Take a tour of Campus+, the independent student platform for PCCOE students. Check your division's timetable, find clubs and events, and buy, sell, share rides or find housing, all in one place."
+    />
+    <meta name="theme-color" content="#F4EFE6" />
+    <meta name="color-scheme" content="light" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="/platform" data-dynamic-canonical />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Campus+" />
+    <meta property="og:title" content="Campus+ — Everything happening around campus, in one place" />
+    <meta
+      property="og:description"
+      content="An editorial tour of Campus+: live division timetables, clubs and communities, a student marketplace, rides, housing, lost & found and more. Independent and built by students."
+    />
+    <meta property="og:url" content="/platform" data-dynamic-og-url />
+    <meta property="og:locale" content="en_IN" />
+    <meta
+      property="og:image"
+      content="https://images.pexels.com/photos/35378714/pexels-photo-35378714.jpeg?auto=compress&cs=tinysrgb&w=1200&h=630&fit=crop"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Campus+ — Your campus. In one place." />
+    <meta
+      name="twitter:description"
+      content="Timetables, clubs, events, a student marketplace, rides and housing, in one independent student platform."
+    />
+    <meta
+      name="twitter:image"
+      content="https://images.pexels.com/photos/35378714/pexels-photo-35378714.jpeg?auto=compress&cs=tinysrgb&w=1200&h=630&fit=crop"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebPage",
+            "@id": "#platform",
+            "name": "Campus+ Platform",
+            "description": "Product tour of Campus+, an independent student platform for timetables, clubs, events, marketplace, rides, housing and lost & found.",
+            "inLanguage": "en-IN",
+            "isPartOf": { "@type": "WebSite", "name": "Campus+" },
+            "about": { "@id": "#app" }
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "#app",
+            "name": "Campus+",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "browserRequirements": "Requires a modern web browser",
+            "audience": { "@type": "EducationalAudience", "educationalRole": "student" },
+            "featureList": [
+              "Division timetables",
+              "Clubs and communities",
+              "Posts and discussions",
+              "Campus events and notices",
+              "Student marketplace",
+              "Rides",
+              "Housing",
+              "Lost and found",
+              "Gigs",
+              "Projects and teams"
+            ],
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" }
+          }
+        ]
+      }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.pexels.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400..900;1,400..700&family=Instrument+Serif:ital@0;1&display=swap"
+    />
+    <style>
+      /* Critical styles for the pre-rendered fallback (replaced once the app mounts). */
+      html { background: #f4efe6; }
+      body { margin: 0; }
+      .ssr { font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif; color: #15130f; padding: 96px 6vw 48px; min-height: 100svh; box-sizing: border-box; }
+      .ssr h1 { font-size: clamp(3.5rem, 12vw, 12rem); line-height: .86; letter-spacing: -.055em; font-weight: 900; margin: 0 0 32px; }
+      .ssr h1 em { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; letter-spacing: -.02em; }
+      .ssr p { max-width: 34rem; font-size: 1rem; line-height: 1.55; color: #5f574c; }
+      .ssr ul { display: flex; flex-wrap: wrap; gap: 8px 24px; padding: 0; list-style: none; font-size: .8rem; text-transform: uppercase; letter-spacing: .14em; }
+      .ssr a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <main class="ssr">
+        <h1>Your campus.<br /><em>in</em> one place.</h1>
+        <p>
+          Campus+ is an independent student platform for PCCOE students. It brings your division timetable, clubs,
+          communities, campus events and notices together with a student marketplace, rides, housing, gigs, projects and
+          lost &amp; found.
+        </p>
+        <ul>
+          <li><a href="/timetable">Public timetable</a></li>
+          <li><a href="/login">Sign in</a></li>
+          <li><a href="/">Open Campus+</a></li>
+          <li><a href="#independence">Independent of PCCOE</a></li>
+        </ul>
+        <p id="independence">
+          Campus+ is an independent, student-built project. It is not an official service of Pimpri Chinchwad College of
+          Engineering, and the college does not endorse it.
+        </p>
+      </main>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+@import "tailwindcss";
+
+/* ───────────────────────── Campus+ editorial tokens ───────────────────────── */
+@theme {
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+
+  --color-ivory: #f4efe6;
+  --color-paper: #faf7f1;
+  --color-sand: #e7dcc8;
+  --color-beige: #efe6d6;
+  --color-dune: #d8c9b0;
+  --color-taupe: #a3937c;
+  --color-stone: #6f6556;
+  --color-charcoal: #2a2622;
+  --color-ink: #15130f;
+  --color-clay: #b45a34; /* restrained accent */
+  --color-moss: #5f6b4a; /* secondary muted accent */
+
+  /* Campus+ in-app palette (used inside device frames) */
+  --color-app: #0f0f11;
+  --color-app-card: #1b1b1f;
+  --color-app-line: #2a2a30;
+  --color-app-mute: #8d8d96;
+  --color-app-accent: #f2c46d;
+
+  --ease-editorial: cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+
+@layer base {
+  html {
+    background: var(--color-ivory);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    font-family: var(--font-sans);
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-ivory);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-clay);
+    outline-offset: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ───────────────────────── Typography ───────────────────────── */
+.display {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 0.84;
+}
+.serif-accent {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.02em;
+}
+.eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.caption {
+  font-size: 0.72rem;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+}
+
+/* ───────────────────────── Photography ───────────────────────── */
+.grade {
+  filter: saturate(0.78) sepia(0.12) contrast(0.97) brightness(1.02);
+}
+.photo-img {
+  opacity: 0;
+  transition: opacity 0.9s var(--ease-editorial);
+}
+.photo-img[data-loaded] {
+  opacity: 1;
+}
+
+/* ───────────────────────── Reveal (IntersectionObserver driven) ───────────────────────── */
+[data-reveal] {
+  opacity: 0;
+  transform: translate3d(var(--rx, 0), var(--ry, 48px), 0) scale(var(--rs, 1));
+  transition:
+    opacity 1s var(--ease-editorial),
+    transform 1.2s var(--ease-editorial);
+  transition-delay: var(--rd, 0ms);
+}
+[data-reveal][data-in] {
+  opacity: 1;
+  transform: none;
+}
+/* Clip reveal for headline lines */
+.line-mask {
+  display: block;
+  overflow: clip;
+  padding-bottom: 0.06em;
+  margin-bottom: -0.06em;
+}
+.line-mask > span {
+  display: block;
+  transform: translate3d(0, 105%, 0);
+  transition: transform 1.25s var(--ease-editorial);
+  transition-delay: var(--rd, 0ms);
+}
+[data-in] .line-mask > span,
+.line-mask[data-in] > span {
+  transform: none;
+}
+
+/* ───────────────────────── Scroll-linked helpers ─────────────────────────
+   JS writes a single --p (0..1) per scene; everything else is pure CSS.  */
+.scene {
+  --p: 0;
+}
+.px {
+  will-change: transform;
+  transform: translate3d(
+    calc((var(--p) - 0.5) * var(--sx, 0px)),
+    calc((var(--p) - 0.5) * var(--sy, 0px)),
+    0
+  );
+}
+
+/* Hero intro (does not gate the headline — LCP stays immediate) */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 60px, 0) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.intro-rise {
+  animation: rise 1.3s var(--ease-editorial) both;
+  animation-delay: var(--d, 0ms);
+}
+.intro-fade {
+  animation: fade 1.2s ease both;
+  animation-delay: var(--d, 0ms);
+}
+
+/* Slide title swap */
+@keyframes title-in {
+  from {
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+.title-in {
+  animation: title-in 0.9s var(--ease-editorial) both;
+}
+@keyframes soft-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.soft-in {
+  animation: soft-in 0.7s var(--ease-editorial) both;
+  animation-delay: var(--d, 0ms);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ───────────────────────── Reduced motion ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+  }
+  [data-reveal],
+  .line-mask > span {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .px,
+  .rm-static {
+    transform: none !important;
+  }
+}

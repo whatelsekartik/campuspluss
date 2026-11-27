@@ -1,5 +1,6 @@
 import { useScrollProgress } from "../motion/scroll";
 import { CinematicPhoto } from "../components/CinematicPhoto";
+import { Kinetic } from "../components/Kinetic";
 import { Wordmark } from "../components/BrandMark";
 import { Icon } from "../components/Icon";
 import { useSmoothNav } from "../components/ShowcaseNav";
@@ -13,14 +14,14 @@ export function Closing() {
     <section id="start" ref={ref} aria-labelledby="closing-title" className="scene relative overflow-clip bg-ivory outline-none">
       {/* ── ivory statement — echoes the hero's cinematic language ── */}
       <div className="relative mx-auto max-w-[1680px] px-5 pb-[22vw] pt-28 sm:px-6 lg:px-10 lg:pb-[14vw] lg:pt-40">
-        <p className="eyebrow text-stone" data-reveal>
+        <p className="pointer-shift eyebrow text-stone" data-reveal style={{ ["--ps" as string]: "4px" }}>
           <span className="text-ink">(07)</span> Get started
         </p>
         <h2 id="closing-title" className="display relative z-10 mt-8 text-[18vw] lg:text-[11.6vw]" data-reveal-group>
-          <span className="line-mask"><span>Make your</span></span>
+          <span className="line-mask"><span><Kinetic text="Make your" /></span></span>
           <span className="line-mask">
             <span style={{ ["--rd" as string]: "100ms" }}>
-              campus <span className="serif-accent">yours.</span>
+              <Kinetic text="campus" /> <Kinetic text="yours." as="em" className="serif-accent" />
             </span>
           </span>
         </h2>
@@ -43,16 +44,16 @@ export function Closing() {
             needed.
           </p>
           <div className="flex flex-wrap gap-3" data-reveal style={{ ["--rd" as string]: "100ms" }}>
-            <a href={ROUTES.app} className="group inline-flex items-center gap-3 rounded-full bg-ink py-2 pl-6 pr-2 text-sm font-medium text-ivory">
+            <a href={ROUTES.app} data-magnet="44" className="pressable group inline-flex items-center gap-3 rounded-full bg-ink py-2 pl-6 pr-2 text-sm font-medium text-ivory">
               Open Campus+
               <span className="grid size-9 place-items-center rounded-full bg-ivory text-ink transition-transform duration-500 group-hover:rotate-45">
                 <Icon name="arrowUpRight" size={16} />
               </span>
             </a>
-            <a href={ROUTES.login} className="rounded-full border border-ink/20 px-6 py-3.5 text-sm font-medium hover:border-ink">
+            <a href={ROUTES.login} data-magnet="30" className="pressable rounded-full border border-ink/20 px-6 py-3.5 text-sm font-medium hover:border-ink">
               Sign in
             </a>
-            <a href={ROUTES.timetable} className="rounded-full px-4 py-3.5 text-sm font-medium underline decoration-ink/30 underline-offset-4 hover:decoration-ink">
+            <a href={ROUTES.timetable} className="ink-link rounded-full px-4 py-3.5 text-sm font-medium underline decoration-ink/30 underline-offset-4 hover:decoration-ink">
               Public timetable
             </a>
           </div>
@@ -91,7 +92,7 @@ export function Closing() {
               <ul className="mt-4 space-y-2 text-[15px]">
                 <li><a href={ROUTES.app} className="text-ivory/80 hover:text-ivory">Open Campus+</a></li>
                 <li><a href={ROUTES.login} className="text-ivory/80 hover:text-ivory">Sign in</a></li>
-                <li><a href={ROUTES.timetable} className="text-ivory/80 hover:text-ivory">Public timetable</a></li>
+                <li><a href={ROUTES.timetable} className="ink-link text-ivory/80 hover:text-ivory">Public timetable</a></li>
               </ul>
             </nav>
             <nav aria-label="Legal" className="lg:col-span-2">

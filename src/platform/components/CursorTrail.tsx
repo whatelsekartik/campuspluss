@@ -1,27 +1,34 @@
 import { useEffect, useRef } from "react";
+import { onPointerFrame, pointer } from "../motion/pointer";
 
 /**
- * CursorTrail — subtle pencil / graphite mouse trail (Canvas 2D).
+ * CursorTrail — a graphite pencil that reacts to what it is over.
  *
- * - Thin, organic graphite stroke (~70px visible trail) with gentle lag.
- * - Rolling pointer history in refs; zero React renders per frame.
- * - Fine-pointer only, disabled for reduced-motion and touch.
- * - pointer-events: none, system cursor stays visible.
+ * Canvas 2D, one rAF loop shared with the pointer engine, zero React renders.
+ * The stroke itself behaves like a pencil on paper:
+ *   · velocity changes pressure (faster = lighter, slower = darker)
+ *   · over media it lifts and blurs slightly (like shading over a photo)
+ *   · over links and headings it sharpens, and the nib grows a hair
+ *   · on mousedown it presses and draws a brief flourish
+ * A thin charcoal ring is drawn with the same instrument, offset from the
+ * system cursor so the pointer stays exactly where the OS draws it.
+ *
+ * Fine-pointer only. Disabled for touch and prefers-reduced-motion.
+ * pointer-events: none; system cursor stays visible.
  */
-type Pt = { x: number; y: number; t: number };
+type Pt = { x: number; y: number; t: number; w: number };
 
-const MAX_AGE = 420; // ms a point stays visible
-const MAX_LEN = 88; // px of visible trail
-const MIN_DIST = 1.2; // px between stored points
+const MAX_AGE = 460;
+const MAX_LEN = 92;
+const MIN_DIST = 1.15;
 
 export function CursorTrail() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const fine = window.matchMedia("(pointer: fine)").matches;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!fine || reduced) return;
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -31,15 +38,16 @@ export function CursorTrail() {
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
     let w = 0;
     let h = 0;
-    let raf = 0;
-    let running = false;
-    let lastMove = 0;
 
     const pts: Pt[] = [];
     const smooth: Pt[] = [];
-    let target: Pt | null = null;
     let lastX = -100;
     let lastY = -100;
+    // eased "instrument" state so mode changes feel like handling a tool
+    let nib = 1;
+    let lift = 0;
+    let press = 0;
+    let ring = 0;
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -53,12 +61,35 @@ export function CursorTrail() {
     };
     resize();
 
-    const draw = () => {
-      raf = 0;
+    const record = () => {
       const now = performance.now();
-      // Age out old points.
+      if (!pointer.active) return;
+      const dx = pointer.x2 - lastX;
+      const dy = pointer.y2 - lastY;
+      if (Math.hypot(dx, dy) < MIN_DIST && pts.length) return;
+      lastX = pointer.x2;
+      lastY = pointer.y2;
+      // pressure: slow movement deposits more graphite
+      const weight = 0.55 + (1 - pointer.speed) * 0.75;
+      pts.push({ x: pointer.x2, y: pointer.y2, t: now, w: weight });
+      if (pts.length > 64) pts.shift();
+    };
+
+    const draw = () => {
+      const now = performance.now();
+
+      // ease instrument state toward the current mode
+      const mode = pointer.mode;
+      const targetNib = mode === "link" ? 1.5 : mode === "text" ? 1.35 : mode === "drag" ? 0.85 : 1;
+      const targetLift = mode === "media" ? 1 : 0;
+      nib += (targetNib - nib) * 0.09;
+      lift += (targetLift - lift) * 0.08;
+      press += ((pointer.down ? 1 : 0) - press) * 0.14;
+      ring += ((mode === "link" || mode === "drag" ? 1 : 0) - ring) * 0.12;
+
+      record();
+
       while (pts.length && now - pts[0].t > MAX_AGE) pts.shift();
-      // Trim to visible length.
       while (pts.length > 2) {
         const a = pts[0];
         const b = pts[pts.length - 1];
@@ -69,100 +100,120 @@ export function CursorTrail() {
       ctx.clearRect(0, 0, w, h);
 
       if (pts.length > 1) {
-        // Smooth with a simple lagging lerp toward the raw history.
         smooth.length = 0;
         for (let i = 0; i < pts.length; i++) {
           const p = pts[i];
           const prev = smooth[i - 1];
           if (!prev) smooth.push({ ...p });
           else {
-            const k = i === pts.length - 1 ? 0.55 : 0.35;
+            const k = i === pts.length - 1 ? 0.55 : 0.34;
             smooth.push({
               x: prev.x + (p.x - prev.x) * k,
               y: prev.y + (p.y - prev.y) * k,
               t: p.t,
+              w: prev.w + (p.w - prev.w) * 0.5,
             });
           }
         }
 
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
+        // a lifted pencil is a softer, wider, fainter mark
+        ctx.filter = lift > 0.05 ? `blur(${(lift * 1.15).toFixed(2)}px)` : "none";
 
         for (let i = 1; i < smooth.length; i++) {
           const a = smooth[i - 1];
           const b = smooth[i];
-          const age = now - b.t;
-          const ageFade = Math.max(0, 1 - age / MAX_AGE);
-          const posFade = i / smooth.length; // tapered tail
-          const alpha = ageFade * posFade * 0.42;
+          const ageFade = Math.max(0, 1 - (now - b.t) / MAX_AGE);
+          const posFade = i / smooth.length;
+          const alpha = ageFade * posFade * (lift > 0.05 ? 0.3 : 0.46) * (0.8 + b.w * 0.35);
           if (alpha <= 0.004) continue;
-          const width = 0.3 + posFade * 1.1; // 0.3 → 1.4px
-          // Warm charcoal with a restrained muted-clay influence.
-          ctx.strokeStyle = `rgba(96, 84, 66, ${alpha.toFixed(3)})`;
+          const width = (0.28 + posFade * 1.15 * b.w) * nib;
+          // warm charcoal + a restrained muted-clay cast at the tip
+          const clay = Math.pow(posFade, 2.2) * 0.5;
+          const r = Math.round(96 + 24 * clay);
+          const g = Math.round(84 + 6 * clay);
+          const bl = Math.round(66 - 12 * clay);
+          ctx.strokeStyle = `rgba(${r}, ${g}, ${bl}, ${alpha.toFixed(3)})`;
           ctx.lineWidth = width;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
           ctx.stroke();
         }
+        ctx.filter = "none";
       }
 
-      // Keep looping while the trail is alive or recently moved.
-      if (pts.length > 1 || now - lastMove < 900) {
-        raf = requestAnimationFrame(draw);
-      } else {
-        running = false;
-        smooth.length = 0;
+      // ── nib: a hairline cross that marks exactly where you are ──
+      if (pointer.active) {
+        const nx = pointer.x2;
+        const ny = pointer.y2;
+        const len = 3.2 + ring * 2.4 + press * 1.6;
+        ctx.strokeStyle = `rgba(96, 84, 66, ${(0.34 + ring * 0.22 + press * 0.2).toFixed(3)})`;
+        ctx.lineWidth = 0.7 + press * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(nx - len, ny);
+        ctx.lineTo(nx + len, ny);
+        ctx.moveTo(nx, ny - len);
+        ctx.lineTo(nx, ny + len);
+        ctx.stroke();
+
+        // ── ring: opens on interactive surfaces, closes on press ──
+        if (ring > 0.02 || press > 0.02) {
+          const rr = 15 + ring * 5 - press * 4;
+          ctx.strokeStyle = `rgba(96, 84, 66, ${(ring * 0.26 + press * 0.22).toFixed(3)})`;
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.arc(nx, ny, rr, 0, Math.PI * 2);
+          ctx.stroke();
+        }
       }
-    };
 
-    const kick = () => {
-      if (!running) {
-        running = true;
-        raf = requestAnimationFrame(draw);
+      // ── click flourish: a quick pencil halo that decays away ──
+      if (pointer.pulse > 0.01) {
+        const p = pointer.pulse;
+        const rr = 8 + (1 - p) * 34;
+        ctx.strokeStyle = `rgba(150, 96, 74, ${(p * 0.34).toFixed(3)})`;
+        ctx.lineWidth = 0.9 * p;
+        ctx.beginPath();
+        ctx.arc(pointer.x2, pointer.y2, rr, 0, Math.PI * 2);
+        ctx.stroke();
+        // four short ticks, like a registration mark
+        ctx.strokeStyle = `rgba(96, 84, 66, ${(p * 0.3).toFixed(3)})`;
+        for (let i = 0; i < 4; i++) {
+          const a = (Math.PI / 2) * i + 0.78;
+          ctx.beginPath();
+          ctx.moveTo(pointer.x2 + Math.cos(a) * (rr - 4), pointer.y2 + Math.sin(a) * (rr - 4));
+          ctx.lineTo(pointer.x2 + Math.cos(a) * (rr + 4), pointer.y2 + Math.sin(a) * (rr + 4));
+          ctx.stroke();
+        }
       }
+
+      const live =
+        pointer.active &&
+        (pts.length > 1 || now - pointer.ts < 520 || pointer.pulse > 0.01 || ring > 0.02 || press > 0.02);
+      if (!live) smooth.length = 0;
     };
 
-    const onMove = (e: PointerEvent) => {
-      if (e.pointerType !== "mouse") return;
-      lastMove = performance.now();
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      if (Math.hypot(dx, dy) < MIN_DIST && pts.length) return;
-      lastX = e.clientX;
-      lastY = e.clientY;
-      target = { x: e.clientX, y: e.clientY, t: lastMove };
-      pts.push(target);
-      if (pts.length > 60) pts.shift();
-      kick();
+    const off = onPointerFrame(draw);
+    const clear = () => {
+      ctx.clearRect(0, 0, w, h);
+      pts.length = 0;
+      smooth.length = 0;
     };
-
-    const onLeave = () => {
-      // Let the trail age out naturally; stop feeding points.
-      lastX = -100;
-      lastY = -100;
-    };
-
-    window.addEventListener("pointermove", onMove, { passive: true });
-    document.documentElement.addEventListener("pointerleave", onLeave);
+    document.documentElement.addEventListener("pointerleave", clear);
+    window.addEventListener("blur", clear);
     window.addEventListener("resize", resize, { passive: true });
 
     return () => {
-      window.removeEventListener("pointermove", onMove);
-      document.documentElement.removeEventListener("pointerleave", onLeave);
+      off();
+      document.documentElement.removeEventListener("pointerleave", clear);
+      window.removeEventListener("blur", clear);
       window.removeEventListener("resize", resize);
-      if (raf) cancelAnimationFrame(raf);
-      running = false;
       pts.length = 0;
       smooth.length = 0;
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      className="cursor-trail pointer-events-none fixed inset-0 z-[80]"
-    />
-  );
+  return <canvas ref={canvasRef} aria-hidden="true" className="cursor-trail pointer-events-none fixed inset-0 z-[80]" />;
 }

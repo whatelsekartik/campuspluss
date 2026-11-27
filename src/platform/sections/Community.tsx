@@ -5,6 +5,7 @@ import { usePrefersReducedMotion } from "../motion/reveal";
 import { PhoneFrame } from "../components/DeviceFrames";
 import { CommunityScreen } from "../components/AppScreens";
 import { CinematicPhoto } from "../components/CinematicPhoto";
+import { Kinetic } from "../components/Kinetic";
 import { Photo } from "../components/Photo";
 import { COMMUNITY_STEPS, IMG } from "../data";
 
@@ -28,7 +29,7 @@ function CommunityIntro() {
           className="display px block whitespace-nowrap pl-[4vw] text-[23vw] lg:text-[17vw]"
           style={{ ["--sx" as string]: "-26vw" }}
         >
-          Find your
+          <Kinetic text="Find your" />
         </span>
       </h2>
 
@@ -36,7 +37,9 @@ function CommunityIntro() {
       <div className="relative z-0 -mt-[8vw] flex flex-wrap items-start justify-between gap-y-6 px-5 sm:px-6 lg:flex-nowrap lg:px-10">
         {tiles.map((t, i) => (
           <figure key={t.cap} className={cn("px", t.w, t.mt, i === 2 && "max-lg:ml-auto")} style={{ ["--sy" as string]: t.sy }}>
-            <CinematicPhoto img={t.img} ratio={t.ratio} crop={t.crop} sizes="(min-width:1024px) 22vw, 50vw" widths={[360, 640, 900]} preset={t.preset} reveal={t.reveal} delay={i * 110} parallaxY="36px" className="rounded-[4px]" />
+            <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
+              <CinematicPhoto img={t.img} ratio={t.ratio} crop={t.crop} sizes="(min-width:1024px) 22vw, 50vw" widths={[360, 640, 900]} preset={t.preset} reveal={t.reveal} delay={i * 110} parallaxY="36px" className="rounded-[4px]" />
+            </div>
             <figcaption className="caption mt-2 flex justify-between text-ivory/55">
               <span>{t.cap}</span>
               <span>0{i + 1}</span>
@@ -47,7 +50,7 @@ function CommunityIntro() {
 
       <p className="relative z-10 -mt-[6vw] text-right" aria-hidden="true">
         <span className="display px serif-accent inline-block whitespace-nowrap pr-[4vw] text-[23vw] lg:text-[17vw]" style={{ ["--sx" as string]: "22vw" }}>
-          people.
+          <Kinetic text="people." />
         </span>
       </p>
 
@@ -117,7 +120,7 @@ function CommunitySequence() {
             </p>
             <h3 className="mt-3 overflow-clip lg:mt-6">
               <span key={step.key} className="title-in display block whitespace-nowrap text-[14vw] text-ivory lg:text-[6vw]">
-                {step.title}
+                <Kinetic text={step.title} />
               </span>
             </h3>
             <p key={step.key + "s"} className="soft-in serif-accent mt-1 text-[7vw] leading-none text-ivory/60 lg:text-[3vw]">
@@ -133,9 +136,10 @@ function CommunitySequence() {
                   type="button"
                   onClick={() => jump(i)}
                   aria-current={i === idx ? "step" : undefined}
+                  data-magnet="26"
                   className={cn(
-                    "eyebrow rounded-full border px-3.5 py-2 transition-colors",
-                    i === idx ? "border-ivory bg-ivory text-ink" : "border-ivory/20 text-ivory/60 hover:text-ivory",
+                    "eyebrow pressable rounded-full border px-3.5 py-2 transition-colors",
+                    i === idx ? "border-ivory bg-ivory text-ink" : "border-ivory/20 text-ivory/60 hover:border-ivory/50 hover:text-ivory",
                   )}
                 >
                   {s.title}
@@ -147,6 +151,7 @@ function CommunitySequence() {
           {/* centre: the phone stays, its screen evolves */}
           <div className="relative col-span-7 col-start-6 mt-4 flex justify-center max-lg:col-span-12 max-lg:col-start-1 lg:col-span-3 lg:col-start-6 lg:mt-0">
             <div
+              data-cursor="media"
               className="will-change-transform"
               style={{
                 transform: "translate3d(0, calc((var(--p, 0.5) - 0.5) * 24px), 0) rotate(calc((var(--p, 0.5) - 0.5) * 1.5deg))",
@@ -167,7 +172,7 @@ function CommunitySequence() {
 
           {/* right: swapping photograph — directional crossfade with clip */}
           <div className="absolute bottom-[6vh] left-[4vw] z-0 w-[30vw] lg:static lg:col-span-3 lg:col-start-10 lg:w-auto">
-            <div className="relative aspect-[3/4] overflow-hidden rounded-[4px] bg-charcoal">
+            <div data-sheen className="relative aspect-[3/4] overflow-hidden rounded-[4px] bg-charcoal">
               {COMMUNITY_STEPS.map((s, i) => {
                 const active = i === idx;
                 const offset = i - idx;

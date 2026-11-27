@@ -428,6 +428,320 @@
   display: none;
 }
 
+/* ─────────────────────── Pointer-reactive surfaces ───────────────────────
+   One shared pointer engine writes a handful of CSS variables; everything
+   below is pure CSS reaction. Attribute-driven so any element can opt in. */
+
+/* 3D tilt + lift. The wrapper is dedicated, so scroll transforms are safe. */
+[data-tilt] {
+  --tx: 0;
+  --ty: 0;
+  --td: 0;
+  --tilt: 6.2deg;
+  --tilt-y: 8.4deg;
+  --tilt-lift: 7px;
+  --tilt-z: 0;
+  transform:
+    perspective(1000px)
+    rotateX(calc(var(--ty) * var(--tilt) * -1))
+    rotateY(calc(var(--tx) * var(--tilt-y)))
+    translate3d(calc(var(--tx) * var(--tilt-lift) * -1), calc(var(--ty) * var(--tilt-lift) * -1), 0)
+    scale(calc(1 + var(--tilt-z)));
+  transform-style: preserve-3d;
+  transition: transform 140ms linear;
+  will-change: transform;
+}
+/* only while a pointer is actually inside does the surface swell */
+[data-tilt]:hover {
+  --tilt-z: 0.012;
+}
+/* large canvases tilt less so the horizon stays believable */
+[data-tilt="soft"] {
+  --tilt: 2.6deg;
+  --tilt-y: 3.4deg;
+  --tilt-lift: 4px;
+}
+[data-tilt="soft"]:hover {
+  --tilt-z: 0.004;
+}
+
+/* Ink-wash highlight that travels with the cursor across a photograph. */
+[data-sheen]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150%;
+  height: 150%;
+  margin: -75% 0 0 -75%;
+  z-index: 12;
+  pointer-events: none;
+  opacity: 0;
+  /* static gradient, moved by transform — no per-frame repaint */
+  background: radial-gradient(
+    38% 38% at 50% 50%,
+    rgba(255, 249, 236, 0.4),
+    rgba(255, 249, 236, 0.1) 45%,
+    transparent 70%
+  );
+  transform: translate(calc(var(--shx, 0) * 32%), calc(var(--shy, 0) * 32%));
+  mix-blend-mode: soft-light;
+  transition: opacity 0.55s var(--ease-editorial);
+  will-change: transform;
+}
+[data-sheen]:hover::after {
+  opacity: 1;
+}
+
+/* CinematicPhoto's own elements carry the scroll transforms, so hover reaction
+   lives on a dedicated wrapper: the photo pushes in, the frame lifts away. */
+[data-hover-media] {
+  transition:
+    translate 0.7s var(--ease-editorial),
+    box-shadow 0.7s var(--ease-editorial),
+    outline-color 0.5s var(--ease-editorial),
+    outline-offset 0.5s var(--ease-editorial);
+  outline: 1px solid transparent;
+  outline-offset: 0;
+}
+[data-hover-media]:hover {
+  translate: 0 -5px;
+  box-shadow: 0 28px 48px -28px rgba(52, 38, 22, 0.55);
+  outline-color: color-mix(in srgb, var(--color-clay) 42%, transparent);
+  outline-offset: 6px;
+}
+/* the photograph itself warms up and gains presence */
+[data-hover-media] .photo-img {
+  transition: opacity 0.9s var(--ease-editorial), filter 0.7s var(--ease-editorial);
+}
+[data-hover-media]:hover .photo-img {
+  filter: saturate(0.95) sepia(0.05) contrast(1.03) brightness(1.06);
+}
+
+/* Ambient pointer shift: individual translate, so it composes with any
+   scroll transform already on the element instead of replacing it. */
+.pointer-shift {
+  translate: calc(var(--pmx, 0) * var(--ps, 5px)) calc(var(--pmy, 0) * var(--ps, 5px));
+}
+
+/* Opt-in photographic hover: media pushes in, frame lifts, caption brightens.
+   Motion stays on the .cine-outer box so transforms never collide. */
+[data-react] {
+  transition: transform 0.9s var(--ease-editorial), box-shadow 0.9s var(--ease-editorial);
+}
+[data-react]:hover {
+  transform: scale(1.03);
+  box-shadow: 0 28px 48px -28px rgba(52, 38, 22, 0.5);
+}
+
+/* Fine frame that draws attention only while the pointer is inside. */
+[data-frame] {
+  outline: 1px solid transparent;
+  outline-offset: 0;
+  transition: outline-color 0.45s var(--ease-editorial), outline-offset 0.45s var(--ease-editorial);
+}
+[data-frame]:hover {
+  outline-color: color-mix(in srgb, var(--color-clay) 55%, transparent);
+  outline-offset: 5px;
+}
+
+/* Magnetic attraction (set --mgx/--mgy from the engine). */
+[data-magnet] {
+  --mgx: 0px;
+  --mgy: 0px;
+  --mgd: 0;
+  transform: translate3d(var(--mgx), var(--mgy), 0);
+  transition: transform 140ms linear;
+  will-change: transform;
+}
+
+/* Underline that rides the cursor along the word. */
+.ink-link {
+  position: relative;
+}
+.ink-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.14em;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    currentColor 0%,
+    currentColor 100%,
+    transparent 100%
+  );
+  background-size: 34% 100%;
+  background-repeat: no-repeat;
+  background-position: var(--ux, 50%) 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.45s var(--ease-editorial);
+  opacity: 0.5;
+}
+.ink-link:hover::after,
+.ink-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* ── Kinetic type: letters lift in a wave as the cursor crosses them ── */
+.kinetic-run {
+  display: inline-block;
+}
+.kinetic-run .kw {
+  display: inline-block;
+  white-space: nowrap;
+}
+.kinetic-run .ch {
+  display: inline-block;
+  transform-origin: 50% 85%;
+  transition:
+    transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+    color 0.35s var(--ease-editorial),
+    opacity 0.35s var(--ease-editorial);
+  will-change: transform;
+}
+.kinetic-run .ch:hover {
+  transform: translate3d(0, -0.055em, 0) rotate(-3.5deg) scale(1.02);
+  /* --kch lets a section opt out of the clay accent (e.g. over a blend layer) */
+  color: var(--kch, var(--color-clay));
+}
+.kinetic-run .ch:has(+ .ch:hover) {
+  transform: translate3d(0, -0.032em, 0) rotate(-1.8deg);
+}
+.kinetic-run .ch:hover + .ch {
+  transform: translate3d(0, -0.032em, 0) rotate(1.8deg);
+}
+.kinetic-run .ch:has(+ .ch + .ch:hover) {
+  transform: translate3d(0, -0.014em, 0);
+}
+.kinetic-run .ch:hover + .ch + .ch {
+  transform: translate3d(0, -0.014em, 0);
+}
+
+/* ── Press: soft ink ripple on buttons ── */
+.pressable {
+  position: relative;
+  overflow: hidden;
+}
+.pressable::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: inherit;
+  mix-blend-mode: soft-light;
+  background: radial-gradient(60% 130% at var(--sxp, 50%) 50%, rgba(255, 255, 255, 0.55), transparent 72%);
+  transition: opacity 0.45s var(--ease-editorial);
+}
+.pressable:hover::after {
+  opacity: 1;
+}
+.pressable:active {
+  scale: 0.985;
+}
+
+/* ── Paper: a corner curls toward the cursor ── */
+.paper-lift {
+  transition:
+    translate 0.55s var(--ease-editorial),
+    rotate 0.55s var(--ease-editorial),
+    box-shadow 0.55s var(--ease-editorial);
+}
+.paper-lift::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 26px;
+  height: 26px;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  background: linear-gradient(315deg, rgba(21, 19, 15, 0.16), rgba(255, 255, 255, 0.5) 55%, transparent 70%);
+  transform-origin: 100% 100%;
+  transform: scale(0.9);
+  transition: transform 0.5s var(--ease-editorial), opacity 0.5s var(--ease-editorial);
+  opacity: 0;
+  pointer-events: none;
+}
+.paper-lift:hover {
+  translate: 0 -7px;
+  rotate: -0.6deg;
+  box-shadow: 0 30px 50px -26px rgba(52, 38, 22, 0.5);
+}
+.paper-lift:hover::after {
+  opacity: 1;
+  transform: scale(1.35);
+}
+
+/* ── Rows: a light sweeps the list and the row nudges toward the cursor ── */
+.scan-row {
+  position: relative;
+  transition: transform 0.4s var(--ease-editorial), background-color 0.35s ease;
+}
+.scan-row::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  transform: translateX(-60%);
+  transition: opacity 0.3s ease;
+}
+.scan-row:hover::after {
+  opacity: 1;
+  animation: scan-sweep 0.9s var(--ease-editorial);
+}
+@keyframes scan-sweep {
+  from {
+    transform: translateX(-70%);
+  }
+  to {
+    transform: translateX(70%);
+  }
+}
+
+/* ── The page-wide pointer light: very faint, warm, behind nothing ── */
+.pointer-field {
+  position: fixed;
+  left: -45vmax;
+  top: -45vmax;
+  width: 90vmax;
+  height: 90vmax;
+  z-index: 60;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 246, 226, 0.17),
+    rgba(198, 158, 120, 0.08) 42%,
+    transparent 70%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  translate: calc(var(--mvx, 50vw) + 45vmax) calc(var(--mvy, 40vh) + 45vmax);
+  transition: opacity 1.2s var(--ease-editorial);
+  will-change: translate;
+}
+.pointer-field[data-live] {
+  opacity: 1;
+}
+
+/* Coarse pointers get no custom affordances at all. */
+@media (pointer: coarse) {
+  [data-tilt],
+  [data-magnet] {
+    transform: none !important;
+  }
+  [data-sheen]::after,
+  .pointer-field {
+    display: none !important;
+  }
+}
+
 /* ───────────────────────── Reduced motion ───────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -453,8 +767,30 @@
     clip-path: none !important;
     opacity: 1 !important;
   }
-  .cursor-trail {
+  .cursor-trail,
+  .pointer-field {
     display: none !important;
+  }
+  [data-tilt],
+  [data-magnet],
+  .kinetic-run .ch,
+  .paper-lift,
+  .scan-row,
+  .pressable:active {
+    transform: none !important;
+    translate: none !important;
+    rotate: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  [data-sheen]::after {
+    display: none !important;
+  }
+  .ink-link::after {
+    background: currentColor;
+    background-size: 100% 100%;
+    transform: none;
+    opacity: 0.4;
   }
   .settle-in,
   .stack-in,

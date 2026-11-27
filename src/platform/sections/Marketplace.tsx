@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { EditorialCarousel } from "../components/EditorialCarousel";
 import { useNearViewport } from "../motion/reveal";
 import { MARKET } from "../data";
+import { Kinetic } from "../components/Kinetic";
 
 export function Marketplace() {
   const ref = useRef<HTMLElement>(null);
@@ -20,10 +21,10 @@ export function Marketplace() {
             <span className="text-ink">(05)</span> Marketplace
           </p>
           <h2 id="market-title" className="display text-[15vw] lg:col-span-9 lg:text-[8.6vw]" data-reveal-group>
-            <span className="line-mask"><span>Buy, sell,</span></span>
+            <span className="line-mask"><span><Kinetic text="Buy, sell," /></span></span>
             <span className="line-mask">
               <span style={{ ["--rd" as string]: "100ms" }}>
-                <span className="serif-accent">pass it</span> on.
+                <Kinetic text="pass it" as="em" className="serif-accent" /> <Kinetic text="on." />
               </span>
             </span>
           </h2>

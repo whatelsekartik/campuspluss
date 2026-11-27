@@ -1,5 +1,6 @@
 import { useScrollProgress } from "../motion/scroll";
 import { CinematicPhoto } from "../components/CinematicPhoto";
+import { Kinetic } from "../components/Kinetic";
 import { Icon, type IconName } from "../components/Icon";
 import { IMG } from "../data";
 
@@ -40,7 +41,9 @@ function Housing() {
         </div>
         <div className="px absolute -bottom-8 right-4 w-[min(78%,300px)] lg:-right-[18%]" style={{ ["--sy" as string]: "-80px", ["--pr" as string]: "1.5deg" }}>
           <div data-reveal style={{ ["--rd" as string]: "300ms", ["--ry" as string]: "28px", ["--rr" as string]: "1.5deg" }}>
+          <div data-tilt>
             <Fragment icon="home" kicker="Housing · listing" title="Room near campus" meta="Shared · walking distance" />
+          </div>
           </div>
         </div>
       </div>
@@ -68,6 +71,7 @@ function Rides() {
       </div>
       <div className="relative mt-6 overflow-hidden rounded-[6px]" data-reveal style={{ ["--ry" as string]: "0px", ["--rs" as string]: "0.94" }}>
         <div className="px" style={{ ["--sy" as string]: "-40px" }}>
+          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[6px]">
           <CinematicPhoto
             img={IMG.bicycle}
             ratio="21/10"
@@ -80,18 +84,24 @@ function Rides() {
             zoom={1.28}
             className="max-sm:!aspect-[4/3]"
           />
+          </div>
         </div>
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(21,19,15,.55),transparent_60%)]" />
         <p
           className="display absolute bottom-[6%] left-[4%] text-[22vw] text-ivory lg:text-[14vw] will-change-transform"
           style={{ transform: "translate3d(calc((var(--p) - 0.5) * -30px), 0, 0)" }}
         >
-          Rides<span className="serif-accent text-[0.45em]"> home</span>
+          <span data-magnet="60" className="inline-block">
+            <Kinetic text="Rides" />
+          </span>
+          <span className="serif-accent text-[0.45em]"> home</span>
         </p>
       </div>
       <div className="relative z-10 -mt-10 flex justify-end pr-4 lg:-mt-16 lg:pr-[6%]" data-reveal style={{ ["--rd" as string]: "150ms" }}>
         <div className="w-[min(88%,340px)]">
-          <Fragment icon="car" kicker="Ride · offering" title="Campus to railway station" meta="Friday evening · 2 seats" />
+          <div data-tilt>
+            <Fragment icon="car" kicker="Ride · offering" title="Campus to railway station" meta="Friday evening · 2 seats" />
+          </div>
         </div>
       </div>
     </div>
@@ -115,10 +125,14 @@ function LostFound() {
       </div>
       <div className="relative h-[110vw] sm:h-[70vw] lg:col-span-5 lg:col-start-8 lg:h-[40vw]">
         <div className="px absolute left-0 top-0 w-[58%]" style={{ ["--sy" as string]: "-70px", ["--sx" as string]: "-30px", ["--pr" as string]: "-3deg" }}>
-          <CinematicPhoto img={IMG.keys} ratio="1/1" crop={[1, 1]} sizes="(min-width:1024px) 24vw, 58vw" widths={[400, 700]} preset="stacked-reveal" reveal="scale" rotate={-3} delay={0} className="rounded-[4px]" />
+          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
+            <CinematicPhoto img={IMG.keys} ratio="1/1" crop={[1, 1]} sizes="(min-width:1024px) 24vw, 58vw" widths={[400, 700]} preset="stacked-reveal" reveal="scale" rotate={-3} delay={0} className="rounded-[4px]" />
+          </div>
         </div>
         <div className="px absolute bottom-[6%] right-0 w-[52%]" style={{ ["--sy" as string]: "90px", ["--sx" as string]: "30px", ["--pr" as string]: "2.5deg" }}>
-          <CinematicPhoto img={IMG.wallet} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 20vw, 52vw" widths={[400, 700]} preset="stacked-reveal" reveal="scale" rotate={2.5} delay={140} className="rounded-[4px]" />
+          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
+            <CinematicPhoto img={IMG.wallet} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 20vw, 52vw" widths={[400, 700]} preset="stacked-reveal" reveal="scale" rotate={2.5} delay={140} className="rounded-[4px]" />
+          </div>
         </div>
         <div className="absolute bottom-0 left-[4%] w-[min(80%,300px)]" data-reveal style={{ ["--rd" as string]: "200ms" }}>
           <Fragment icon="search" kicker="Found · near library" title="Set of keys, blue tag" meta="Posted today" />
@@ -138,7 +152,7 @@ function GigsProjects() {
     <div data-nav-dark className="relative -mx-5 overflow-hidden rounded-[28px] bg-charcoal px-5 py-20 text-ivory sm:-mx-6 sm:px-6 lg:-mx-10 lg:rounded-[48px] lg:px-10 lg:py-28">
       <div className="grid gap-16 lg:grid-cols-2 lg:gap-10">
         {items.map((it, i) => (
-          <article key={it.t} className={i === 1 ? "lg:mt-40" : ""} data-reveal style={{ ["--rd" as string]: `${i * 120}ms` }}>
+          <article key={it.t} data-cursor="media" className={i === 1 ? "lg:mt-40" : ""} data-reveal style={{ ["--rd" as string]: `${i * 120}ms` }}>
             <p className="eyebrow flex items-center gap-3 text-ivory/50">
               <span className="text-ivory">{it.n}</span>
               <span className="h-px w-10 bg-ivory/25" />
@@ -185,7 +199,7 @@ function Notices() {
         {slips.map((s, i) => (
           <li
             key={s.t}
-            className={`${s.c} relative rounded-[3px] p-5 shadow-[0_18px_30px_-20px_rgba(52,38,22,.45)] sm:p-7 ${i % 2 ? "mt-10" : ""}`}
+            className={`paper-lift ${s.c} relative rounded-[3px] p-5 shadow-[0_18px_30px_-20px_rgba(52,38,22,.45)] sm:p-7 ${i % 2 ? "mt-10" : ""}`}
             style={{ rotate: s.r, ["--rd" as string]: `${i * 110}ms`, ["--ry" as string]: "30px", ["--rr" as string]: s.r }}
             data-reveal
           >
@@ -209,8 +223,8 @@ export function Utilities() {
             <span className="text-ink">(06)</span> Campus utilities
           </p>
           <h2 id="utilities-title" className="display text-[17vw] lg:col-span-9 lg:text-[10vw]" data-reveal-group>
-            <span className="line-mask"><span>More happens</span></span>
-            <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "100ms" }}>here.</span></span>
+            <span className="line-mask"><span><Kinetic text="More happens" /></span></span>
+            <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "100ms" }}><Kinetic text="here." /></span></span>
           </h2>
         </div>
 

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { ShowcaseNav } from "./components/ShowcaseNav";
 import { CursorTrail } from "./components/CursorTrail";
+import { PointerField } from "./components/PointerField";
 import { Hero } from "./sections/Hero";
 import { Everything } from "./sections/Everything";
 import { Academic } from "./sections/Academic";
@@ -39,6 +40,7 @@ export default function PlatformPage() {
 
   return (
     <div data-platform className="bg-ivory text-ink">
+      <PointerField />
       <CursorTrail />
       <ShowcaseNav />
       <main id="main">

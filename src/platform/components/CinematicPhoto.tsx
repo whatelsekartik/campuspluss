@@ -28,6 +28,11 @@ type Props = {
   className?: string;
   imgClassName?: string;
   style?: CSSProperties;
+  /**
+   * When the outer box is tilted by a pointer-reactive parent, the photo
+   * itself gets a slow counter-zoom. Pure CSS: no extra listeners.
+   */
+  react?: boolean;
 };
 
 /**
@@ -60,6 +65,7 @@ export function CinematicPhoto({
   className,
   imgClassName,
   style,
+  react,
 }: Props) {
   const d = CINE_DEFAULTS[preset];
   const revealMode = reveal ?? CINE_REVEAL_DEFAULT[preset];
@@ -76,6 +82,7 @@ export function CinematicPhoto({
     <div
       className={cn("cine-outer relative overflow-hidden bg-sand", className)}
       data-cine={preset}
+      {...(react ? { "data-react": "" } : {})}
       data-cine-reveal={revealMode}
       {...(revealMode !== "none" ? { "data-reveal": "" } : {})}
       style={{ aspectRatio: ratio, ...vars, ...style }}

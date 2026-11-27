@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { useScrollProgress } from "../motion/scroll";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { CinematicPhoto } from "../components/CinematicPhoto";
+import { Kinetic } from "../components/Kinetic";
 import { IMG } from "../data";
 
 /*
@@ -47,8 +48,10 @@ export function Everything() {
             opacity: "calc(0.25 + var(--a) * 0.75)",
           }}
         >
-          Everything
-          <span className="serif-accent mt-[0.1em] block text-[0.3em] leading-none">you need, kept together.</span>
+          <Kinetic text="Everything" />
+          <span className="serif-accent mt-[0.1em] block text-[0.3em] leading-none">
+            <Kinetic text="you need, kept together." />
+          </span>
         </h2>
 
         {/* main photographic panel — expands to fill the viewport.
@@ -95,9 +98,13 @@ export function Everything() {
             </p>
             <ol className="mt-10 grid max-w-4xl gap-6 text-left sm:grid-cols-3">
               {STEPS.map(([n, t, d]) => (
-                <li key={n} className="border-t border-ivory/30 pt-3">
-                  <span className="caption opacity-70">{n}</span>
-                  <p className="mt-1 text-base font-semibold">{t}</p>
+                <li
+                  key={n}
+                  data-magnet="40"
+                  className="scan-row group border-t border-ivory/30 pb-3 pt-3"
+                >
+                  <span className="caption opacity-70 transition-colors group-hover:text-clay">{n}</span>
+                  <p className="mt-1 text-base font-semibold transition-transform duration-500 group-hover:translate-x-1">{t}</p>
                   <p className="caption mt-1 opacity-80">{d}</p>
                 </li>
               ))}
@@ -113,7 +120,9 @@ export function Everything() {
             opacity: "calc(1 - var(--e) * 1.2)",
           }}
         >
-          <CinematicPhoto img={IMG.stairs} ratio="3/4" crop={[3, 4]} sizes="(min-width:1024px) 13vw, 30vw" widths={[300, 500]} preset="float" reveal="none" parallaxY="30px" className="rounded-[4px]" />
+          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
+            <CinematicPhoto img={IMG.stairs} ratio="3/4" crop={[3, 4]} sizes="(min-width:1024px) 13vw, 30vw" widths={[300, 500]} preset="float" reveal="none" parallaxY="30px" className="rounded-[4px]" />
+          </div>
           <p className="caption mt-2 text-stone">Between lectures.</p>
         </div>
         <div
@@ -123,7 +132,9 @@ export function Everything() {
             opacity: "calc(1 - var(--e) * 1.2)",
           }}
         >
-          <CinematicPhoto img={IMG.notebook} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 18vw, 36vw" widths={[360, 600]} preset="float" reveal="none" parallaxY="40px" className="rounded-[4px]" />
+          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
+            <CinematicPhoto img={IMG.notebook} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 18vw, 36vw" widths={[360, 600]} preset="float" reveal="none" parallaxY="40px" className="rounded-[4px]" />
+          </div>
         </div>
         <div
           className="rm-static absolute right-[16vw] top-[22vh] z-20 hidden w-[8vw] lg:block"
@@ -132,7 +143,9 @@ export function Everything() {
             opacity: "calc(1 - var(--e) * 1.3)",
           }}
         >
-          <CinematicPhoto img={IMG.concreteGreen} ratio="1/1" crop={[1, 1]} sizes="8vw" widths={[200, 320]} preset="float" reveal="none" parallaxY="24px" className="rounded-[4px]" />
+          <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
+            <CinematicPhoto img={IMG.concreteGreen} ratio="1/1" crop={[1, 1]} sizes="8vw" widths={[200, 320]} preset="float" reveal="none" parallaxY="24px" className="rounded-[4px]" />
+          </div>
         </div>
 
         {/* short central statement before the expansion */}

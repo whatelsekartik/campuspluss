@@ -4,6 +4,7 @@ import { usePrefersReducedMotion } from "../motion/reveal";
 import { PhoneFrame } from "../components/DeviceFrames";
 import { HomeScreen } from "../components/AppScreens";
 import { CinematicPhoto } from "../components/CinematicPhoto";
+import { Kinetic } from "../components/Kinetic";
 import { Icon } from "../components/Icon";
 import { useSmoothNav } from "../components/ShowcaseNav";
 import { IMG, ROUTES } from "../data";
@@ -47,7 +48,7 @@ export function Hero() {
 
       {/* meta row */}
       <div className="relative z-30 mx-auto flex max-w-[1680px] items-start justify-between px-5 pt-6 sm:px-6 lg:px-10">
-        <p className="eyebrow max-w-[16rem] text-stone">
+        <p className="pointer-shift eyebrow max-w-[16rem] text-stone" style={{ ["--ps" as string]: "3px" }}>
           <span className="text-ink">(Platform)</span> An independent student platform for PCCOE
         </p>
         <a href="#how" onClick={(e) => go(e, "how")} className="eyebrow hidden items-center gap-2 text-stone hover:text-ink sm:flex">
@@ -57,30 +58,31 @@ export function Hero() {
 
       {/* ── Headline line 1 (behind the phone) ── */}
       <h1 id="hero-title" className="relative mx-auto max-w-[1680px] px-5 pt-6 sm:px-6 lg:px-10 lg:pt-[4vh]">
-        <span className="display rm-static block text-[22vw] lg:text-[clamp(5rem,12.6vw,15.5rem)]" style={drift("-30px", "-14vw")}>
-          Your <br className="lg:hidden" />
-          campus.
+        <span className="block w-fit">
+          <span className="display rm-static block text-[22vw] lg:text-[clamp(5rem,12.6vw,15.5rem)]" style={drift("-30px", "-14vw")}>
+            <Kinetic text="Your" /> <br className="lg:hidden" />
+            <Kinetic text="campus." />
+          </span>
         </span>
         {/* line 2 sits in front of the phone; difference blend keeps it legible over the device */}
         <span
-          className="display rm-static relative z-20 block text-[22vw] text-ivory mix-blend-difference lg:absolute lg:left-[16vw] lg:top-[calc(4vh+12.6vw*0.86+1.5rem)] lg:text-[clamp(5rem,12.6vw,15.5rem)]"
-          style={drift("-60px", "10vw")}
+          className="relative z-20 block w-fit text-[22vw] mix-blend-difference lg:absolute lg:left-[16vw] lg:top-[calc(4vh+12.6vw*0.86+1.5rem)] lg:text-[clamp(5rem,12.6vw,15.5rem)]"
+          style={{ ...drift("-60px", "10vw"), ["--kch" as string]: "var(--color-ivory)" }}
         >
-          <span className="serif-accent">in</span> one <br className="lg:hidden" />
-          place.
+          <span className="display rm-static block">
+            <Kinetic text="in" as="em" className="serif-accent" /> <Kinetic text="one" /> <br className="lg:hidden" />
+            <Kinetic text="place." />
+          </span>
         </span>
       </h1>
 
       {/* ── Phone with depth + scroll-linked settling ── */}
       <div
         className="rm-static relative z-10 mx-auto -mt-[10vw] w-[min(62vw,300px)] translate-x-[12%] lg:absolute lg:left-[59vw] lg:top-[11vh] lg:mt-0 lg:w-[clamp(250px,21vw,360px)] lg:translate-x-0"
-        style={{
-          ...drift("-90px"),
-          perspective: "1200px",
-        }}
+        style={drift("-90px")}
       >
+        <div data-tilt data-cursor="media" className="will-change-transform">
         <div
-          className="will-change-transform"
           style={{
             transform: "rotateX(calc(var(--p, 0) * 6deg)) rotateY(calc(var(--p, 0) * -4deg))",
             transformOrigin: "50% 80%",
@@ -98,6 +100,7 @@ export function Hero() {
             style={{ opacity: "calc(0.5 + var(--p, 0) * 0.5)", transform: "scaleX(calc(0.9 + var(--p, 0) * 0.15))" }}
           />
         </div>
+        </div>
         {/* mobile-only companion photo */}
         <div className="absolute -left-[39%] bottom-[10%] w-[33%] lg:hidden" aria-hidden="true">
           <CinematicPhoto img={IMG.libraryAisle} ratio="3/4" crop={[3, 4]} sizes="25vw" widths={[240, 400]} preset="zoom-reveal" reveal="scale" delay={500} className="rounded-[3px]" />
@@ -114,14 +117,20 @@ export function Hero() {
 
       {/* ── Floating photographs — staggered entrances, independent camera moves ── */}
       <div className="rm-static absolute right-[3vw] top-[19vh] z-0 hidden w-[10.5vw] lg:block" style={drift("140px")}>
-        <CinematicPhoto img={IMG.concreteFacade} ratio="1/1" crop={[1, 1]} sizes="11vw" widths={[240, 400]} priority preset="zoom-reveal" reveal="clip-up" delay={260} className="rounded-[4px]" />
+        <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
+          <CinematicPhoto img={IMG.concreteFacade} ratio="1/1" crop={[1, 1]} sizes="11vw" widths={[240, 400]} priority preset="zoom-reveal" reveal="clip-up" delay={260} className="rounded-[4px]" />
+        </div>
         <p className="caption mt-2 text-stone">Spaces you walk through daily.</p>
       </div>
       <div className="rm-static absolute bottom-[6vh] right-[2.5vw] z-0 hidden w-[17vw] lg:block" style={drift("-180px")}>
-        <CinematicPhoto img={IMG.deskSun} ratio="4/3" crop={[4, 3]} sizes="17vw" widths={[400, 640]} priority preset="parallax" reveal="wipe-left" delay={380} parallaxY="50px" className="rounded-[4px]" />
+        <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
+          <CinematicPhoto img={IMG.deskSun} ratio="4/3" crop={[4, 3]} sizes="17vw" widths={[400, 640]} priority preset="parallax" reveal="wipe-left" delay={380} parallaxY="50px" className="rounded-[4px]" />
+        </div>
       </div>
       <div className="rm-static absolute bottom-[5vh] left-[31vw] z-0 hidden w-[12.5vw] lg:block" style={drift("-60px")}>
-        <CinematicPhoto img={IMG.libraryAisle} ratio="3/4" crop={[3, 4]} sizes="13vw" widths={[300, 500]} priority preset="vertical-pan" reveal="clip-up" delay={320} parallaxY="40px" className="rounded-[4px]" />
+        <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
+          <CinematicPhoto img={IMG.libraryAisle} ratio="3/4" crop={[3, 4]} sizes="13vw" widths={[300, 500]} priority preset="vertical-pan" reveal="clip-up" delay={320} parallaxY="40px" className="rounded-[4px]" />
+        </div>
       </div>
 
       {/* ── CTA block ── */}
@@ -134,14 +143,15 @@ export function Hero() {
           <a
             href="#how"
             onClick={(e) => go(e, "how")}
-            className="group inline-flex items-center gap-3 rounded-full bg-ink py-2 pl-5 pr-2 text-sm font-medium text-ivory"
+            data-magnet="46"
+            className="pressable group inline-flex items-center gap-3 rounded-full bg-ink py-2 pl-5 pr-2 text-sm font-medium text-ivory"
           >
             Explore the platform
             <span className="grid size-8 place-items-center rounded-full bg-ivory text-ink transition-transform duration-500 group-hover:translate-y-0.5">
               <Icon name="arrowDown" size={15} />
             </span>
           </a>
-          <a href={ROUTES.login} className="rounded-full border border-ink/20 px-5 py-3 text-sm font-medium hover:border-ink">
+          <a href={ROUTES.login} data-magnet="34" className="pressable rounded-full border border-ink/20 px-5 py-3 text-sm font-medium hover:border-ink">
             Get started
           </a>
         </div>

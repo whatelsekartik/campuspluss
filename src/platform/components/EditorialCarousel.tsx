@@ -12,11 +12,14 @@ const pad = (n: number) => String(n).padStart(2, "0");
  * - Pointer (touch + mouse) drag with threshold and live drag offset
  * - Arrow keys / Home / End when the region has focus
  * - Only the current and adjacent slides request images
+ * - Incoming photographs reveal with their own slide + scale; the
+ *   overlapping stack settles with a rotational editorial motion.
  */
 export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
   const [index, setIndex] = useState(0);
   const [drag, setDrag] = useState(0);
   const [seen, setSeen] = useState<Set<number>>(() => new Set([0, 1, slides.length - 1]));
+  const [dir, setDir] = useState(1);
   const start = useRef<{ x: number; y: number; id: number; locked: boolean | null } | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const n = slides.length;
@@ -24,10 +27,16 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
   const goTo = useCallback(
     (i: number) => {
       const next = (i + n) % n;
+      setDir(() => {
+        // direction of travel for the incoming photo reveal
+        if (next === (index + 1) % n) return 1;
+        if (next === (index - 1 + n) % n) return -1;
+        return next > index ? 1 : -1;
+      });
       setIndex(next);
       setSeen((s) => new Set([...s, next, (next + 1) % n, (next - 1 + n) % n]));
     },
-    [n],
+    [n, index],
   );
   const prev = () => goTo(index - 1);
   const next = () => goTo(index + 1);
@@ -100,21 +109,39 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
               className={cn("flex h-full", !dragging && "transition-transform duration-[900ms] ease-[var(--ease-editorial)]")}
               style={{ transform: `translate3d(calc(${-index * 100}% + ${drag}px), 0, 0)` }}
             >
-              {slides.map((s, i) => (
-                <div
-                  key={s.id}
-                  className="relative h-full w-full shrink-0"
-                  role="group"
-                  aria-roledescription="slide"
-                  aria-label={`${i + 1} of ${n}: ${s.title}`}
-                  aria-hidden={i !== index}
-                >
-                  {seen.has(i) && (
-                    <Photo img={s.backdrop} sizes="(min-width:1024px) 64vw, 100vw" widths={[640, 1024, 1600]} className="absolute inset-0" imgClassName="pointer-events-none" />
-                  )}
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(21,19,15,.45))]" />
-                </div>
-              ))}
+              {slides.map((s, i) => {
+                const active = i === index;
+                return (
+                  <div
+                    key={s.id}
+                    className="relative h-full w-full shrink-0 overflow-hidden"
+                    role="group"
+                    aria-roledescription="slide"
+                    aria-label={`${i + 1} of ${n}: ${s.title}`}
+                    aria-hidden={!active}
+                  >
+                    {seen.has(i) && (
+                      <div
+                        className={cn("absolute inset-0", active && !dragging && "slide-photo-in")}
+                        style={active ? ({ ["--slide-x" as string]: `${dir * 56}px` } as React.CSSProperties) : undefined}
+                      >
+                        <div
+                          className="absolute inset-0 will-change-transform"
+                          style={{
+                            transform: active
+                              ? "scale(1.02)"
+                              : `scale(1.08) translate3d(${(i - index) * 24}px, 0, 0)`,
+                            transition: "transform 900ms var(--ease-editorial)",
+                          }}
+                        >
+                          <Photo img={s.backdrop} sizes="(min-width:1024px) 64vw, 100vw" widths={[640, 1024, 1600]} className="absolute inset-0" imgClassName="pointer-events-none" />
+                        </div>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(21,19,15,.45))]" />
+                  </div>
+                );
+              })}
             </div>
 
             {/* sample-content label */}
@@ -124,13 +151,13 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
             </p>
           </div>
 
-          {/* layered image stack overlapping the stage edge */}
+          {/* layered image stack overlapping the stage edge — rotational settling */}
           <div className="pointer-events-none absolute -bottom-10 right-4 z-10 w-[38%] sm:w-[28%] lg:-bottom-14 lg:-left-[12%] lg:right-auto lg:w-[26%]" aria-hidden="true">
             <div key={slide.id + "s"} className="relative">
-              <div className="soft-in rotate-[-4deg] shadow-[0_30px_50px_-25px_rgba(52,38,22,.6)]">
+              <div className="stack-in rotate-[-4deg] shadow-[0_30px_50px_-25px_rgba(52,38,22,.6)]" style={{ ["--settle-rot" as string]: "-4deg" }}>
                 <Photo img={slide.stack[0]} ratio="4/5" crop={[4, 5]} sizes="18vw" widths={[300, 500]} className="rounded-[4px] ring-[6px] ring-paper" />
               </div>
-              <div className="soft-in absolute -right-[38%] -top-[34%] w-[70%] rotate-[5deg] shadow-[0_30px_50px_-25px_rgba(52,38,22,.6)]" style={{ ["--d" as string]: "120ms" }}>
+              <div className="stack-in absolute -right-[38%] -top-[34%] w-[70%] rotate-[5deg] shadow-[0_30px_50px_-25px_rgba(52,38,22,.6)]" style={{ ["--d" as string]: "120ms", ["--settle-rot" as string]: "5deg" }}>
                 <Photo img={slide.stack[1]} ratio="1/1" crop={[1, 1]} sizes="12vw" widths={[240, 400]} className="rounded-[4px] ring-[6px] ring-paper" />
               </div>
             </div>

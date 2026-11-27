@@ -1,5 +1,5 @@
 import { useScrollProgress } from "../motion/scroll";
-import { Photo } from "../components/Photo";
+import { CinematicPhoto } from "../components/CinematicPhoto";
 import { Icon, type IconName } from "../components/Icon";
 import { IMG } from "../data";
 
@@ -29,17 +29,19 @@ function Index({ n, label }: { n: string; label: string }) {
   );
 }
 
-/* ── Housing: tall portrait, word crossing the image edge ── */
+/* ── Housing: vertical reveal + slow internal drift, floating listing ── */
 function Housing() {
   const ref = useScrollProgress<HTMLDivElement>("pass");
   return (
     <div ref={ref} className="scene relative grid gap-10 lg:grid-cols-12 lg:items-end">
       <div className="relative lg:col-span-5">
         <div className="px" style={{ ["--sy" as string]: "60px" }}>
-          <Photo img={IMG.bedroom} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 40vw, 100vw" widths={[480, 800, 1200]} className="rounded-[4px]" />
+          <CinematicPhoto img={IMG.bedroom} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 40vw, 100vw" widths={[480, 800, 1200]} preset="vertical-pan" reveal="clip-up" parallaxY="50px" zoom={1.2} className="rounded-[4px]" />
         </div>
-        <div className="px absolute -bottom-8 right-4 w-[min(78%,300px)] lg:-right-[18%]" style={{ ["--sy" as string]: "-80px" }} data-reveal>
-          <Fragment icon="home" kicker="Housing · listing" title="Room near campus" meta="Shared · walking distance" />
+        <div className="px absolute -bottom-8 right-4 w-[min(78%,300px)] lg:-right-[18%]" style={{ ["--sy" as string]: "-80px", ["--pr" as string]: "1.5deg" }}>
+          <div data-reveal style={{ ["--rd" as string]: "300ms", ["--ry" as string]: "28px", ["--rr" as string]: "1.5deg" }}>
+            <Fragment icon="home" kicker="Housing · listing" title="Room near campus" meta="Shared · walking distance" />
+          </div>
         </div>
       </div>
       <div className="relative lg:col-span-7 lg:pb-10">
@@ -55,7 +57,7 @@ function Housing() {
   );
 }
 
-/* ── Rides: wide cinematic strip, type inside the image ── */
+/* ── Rides: wide cinematic strip, slow horizontal pan, type inside ── */
 function Rides() {
   const ref = useScrollProgress<HTMLDivElement>("pass");
   return (
@@ -65,11 +67,25 @@ function Rides() {
         <p className="caption hidden max-w-[16rem] text-right text-stone sm:block">Share the trip, and the cost, with people heading the same way.</p>
       </div>
       <div className="relative mt-6 overflow-hidden rounded-[6px]" data-reveal style={{ ["--ry" as string]: "0px", ["--rs" as string]: "0.94" }}>
-        <div className="px" style={{ ["--sy" as string]: "-90px" }}>
-          <Photo img={IMG.bicycle} ratio="21/10" crop={[21, 10]} sizes="100vw" widths={[800, 1280, 1800]} className="scale-110 max-sm:!aspect-[4/3]" />
+        <div className="px" style={{ ["--sy" as string]: "-40px" }}>
+          <CinematicPhoto
+            img={IMG.bicycle}
+            ratio="21/10"
+            crop={[21, 10]}
+            sizes="100vw"
+            widths={[800, 1280, 1800]}
+            preset="horizontal-pan"
+            reveal="none"
+            parallaxX="70px"
+            zoom={1.28}
+            className="max-sm:!aspect-[4/3]"
+          />
         </div>
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(21,19,15,.55),transparent_60%)]" />
-        <p className="display absolute bottom-[6%] left-[4%] text-[22vw] text-ivory lg:text-[14vw]">
+        <p
+          className="display absolute bottom-[6%] left-[4%] text-[22vw] text-ivory lg:text-[14vw] will-change-transform"
+          style={{ transform: "translate3d(calc((var(--p) - 0.5) * -30px), 0, 0)" }}
+        >
           Rides<span className="serif-accent text-[0.45em]"> home</span>
         </p>
       </div>
@@ -82,7 +98,7 @@ function Rides() {
   );
 }
 
-/* ── Lost & found: small square stack + serif headline ── */
+/* ── Lost & found: layered collage, entries from different directions ── */
 function LostFound() {
   const ref = useScrollProgress<HTMLDivElement>("pass");
   return (
@@ -98,11 +114,11 @@ function LostFound() {
         </p>
       </div>
       <div className="relative h-[110vw] sm:h-[70vw] lg:col-span-5 lg:col-start-8 lg:h-[40vw]">
-        <div className="px absolute left-0 top-0 w-[58%]" style={{ ["--sy" as string]: "-70px" }} data-reveal>
-          <Photo img={IMG.keys} ratio="1/1" crop={[1, 1]} sizes="(min-width:1024px) 24vw, 58vw" widths={[400, 700]} className="rounded-[4px]" />
+        <div className="px absolute left-0 top-0 w-[58%]" style={{ ["--sy" as string]: "-70px", ["--sx" as string]: "-30px", ["--pr" as string]: "-3deg" }}>
+          <CinematicPhoto img={IMG.keys} ratio="1/1" crop={[1, 1]} sizes="(min-width:1024px) 24vw, 58vw" widths={[400, 700]} preset="stacked-reveal" reveal="scale" rotate={-3} delay={0} className="rounded-[4px]" />
         </div>
-        <div className="px absolute bottom-[6%] right-0 w-[52%]" style={{ ["--sy" as string]: "90px" }} data-reveal>
-          <Photo img={IMG.wallet} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 20vw, 52vw" widths={[400, 700]} className="rounded-[4px]" />
+        <div className="px absolute bottom-[6%] right-0 w-[52%]" style={{ ["--sy" as string]: "90px", ["--sx" as string]: "30px", ["--pr" as string]: "2.5deg" }}>
+          <CinematicPhoto img={IMG.wallet} ratio="4/5" crop={[4, 5]} sizes="(min-width:1024px) 20vw, 52vw" widths={[400, 700]} preset="stacked-reveal" reveal="scale" rotate={2.5} delay={140} className="rounded-[4px]" />
         </div>
         <div className="absolute bottom-0 left-[4%] w-[min(80%,300px)]" data-reveal style={{ ["--rd" as string]: "200ms" }}>
           <Fragment icon="search" kicker="Found · near library" title="Set of keys, blue tag" meta="Posted today" />
@@ -112,11 +128,11 @@ function LostFound() {
   );
 }
 
-/* ── Gigs + Projects: contrasting dark band, giant numerals ── */
+/* ── Gigs + Projects: independent reveals, layered depth ── */
 function GigsProjects() {
   const items = [
-    { n: "06.4", t: "Gigs", s: "Small paid tasks", d: "Find short jobs and freelance work from other students, or post one yourself.", img: IMG.sketch, icon: "briefcase" as IconName, f: ["Gig · design", "Poster for a club event", "Short task · open"] },
-    { n: "06.5", t: "Projects", s: "& teams", d: "Describe a project, list the skills you need, and find people who want to build it with you.", img: IMG.stickyNotes, icon: "layers" as IconName, f: ["Team · looking for", "Frontend + ML for a project", "2 roles open"] },
+    { n: "06.4", t: "Gigs", s: "Small paid tasks", d: "Find short jobs and freelance work from other students, or post one yourself.", img: IMG.sketch, icon: "briefcase" as IconName, f: ["Gig · design", "Poster for a club event", "Short task · open"], preset: "zoom-reveal" as const, reveal: "clip-up" as const },
+    { n: "06.5", t: "Projects", s: "& teams", d: "Describe a project, list the skills you need, and find people who want to build it with you.", img: IMG.stickyNotes, icon: "layers" as IconName, f: ["Team · looking for", "Frontend + ML for a project", "2 roles open"], preset: "parallax" as const, reveal: "wipe-left" as const },
   ];
   return (
     <div data-nav-dark className="relative -mx-5 overflow-hidden rounded-[28px] bg-charcoal px-5 py-20 text-ivory sm:-mx-6 sm:px-6 lg:-mx-10 lg:rounded-[48px] lg:px-10 lg:py-28">
@@ -129,7 +145,7 @@ function GigsProjects() {
               {it.t}
             </p>
             <div className="relative mt-8">
-              <Photo img={it.img} ratio={i === 0 ? "5/4" : "4/5"} crop={i === 0 ? [5, 4] : [4, 5]} sizes="(min-width:1024px) 40vw, 100vw" widths={[480, 800, 1100]} className="w-[88%] rounded-[4px]" />
+              <CinematicPhoto img={it.img} ratio={i === 0 ? "5/4" : "4/5"} crop={i === 0 ? [5, 4] : [4, 5]} sizes="(min-width:1024px) 40vw, 100vw" widths={[480, 800, 1100]} preset={it.preset} reveal={it.reveal} delay={i * 140} parallaxY="40px" className="w-[88%] rounded-[4px]" />
               <h3 className="display absolute -bottom-[0.18em] right-0 text-[22vw] text-ivory lg:text-[9vw]">{it.t}</h3>
             </div>
             <p className="serif-accent mt-10 text-3xl text-ivory/60">{it.s}</p>
@@ -144,7 +160,7 @@ function GigsProjects() {
   );
 }
 
-/* ── Notices: pinned paper slips ── */
+/* ── Notices: paper-like movement, gentle rotation and settling ── */
 function Notices() {
   const slips = [
     { t: "Library hours", d: "Extended during exam weeks", r: "-3deg", c: "bg-paper" },
@@ -170,7 +186,7 @@ function Notices() {
           <li
             key={s.t}
             className={`${s.c} relative rounded-[3px] p-5 shadow-[0_18px_30px_-20px_rgba(52,38,22,.45)] sm:p-7 ${i % 2 ? "mt-10" : ""}`}
-            style={{ rotate: s.r, ["--rd" as string]: `${i * 90}ms` }}
+            style={{ rotate: s.r, ["--rd" as string]: `${i * 110}ms`, ["--ry" as string]: "30px", ["--rr" as string]: s.r }}
             data-reveal
           >
             <span className="absolute left-1/2 top-3 size-2.5 -translate-x-1/2 rounded-full bg-clay shadow-sm" aria-hidden="true" />

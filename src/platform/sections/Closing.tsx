@@ -1,5 +1,5 @@
 import { useScrollProgress } from "../motion/scroll";
-import { Photo } from "../components/Photo";
+import { CinematicPhoto } from "../components/CinematicPhoto";
 import { Wordmark } from "../components/BrandMark";
 import { Icon } from "../components/Icon";
 import { useSmoothNav } from "../components/ShowcaseNav";
@@ -11,7 +11,7 @@ export function Closing() {
 
   return (
     <section id="start" ref={ref} aria-labelledby="closing-title" className="scene relative overflow-clip bg-ivory outline-none">
-      {/* ── ivory statement ── */}
+      {/* ── ivory statement — echoes the hero's cinematic language ── */}
       <div className="relative mx-auto max-w-[1680px] px-5 pb-[22vw] pt-28 sm:px-6 lg:px-10 lg:pb-[14vw] lg:pt-40">
         <p className="eyebrow text-stone" data-reveal>
           <span className="text-ink">(07)</span> Get started
@@ -25,12 +25,16 @@ export function Closing() {
           </span>
         </h2>
 
-        {/* floating photographs around the statement */}
-        <div className="px absolute right-[6vw] top-[16vh] z-0 hidden w-[14vw] lg:block" style={{ ["--sy" as string]: "-160px" }}>
-          <Photo img={IMG.concreteDawn} ratio="3/4" crop={[3, 4]} sizes="14vw" widths={[300, 500]} className="rounded-[4px]" />
+        {/* floating photographs around the statement — slow camera moves */}
+        <div className="px absolute right-[6vw] top-[16vh] z-0 hidden w-[14vw] lg:block" style={{ ["--sy" as string]: "-160px", ["--pr" as string]: "2deg" }}>
+          <CinematicPhoto img={IMG.concreteDawn} ratio="3/4" crop={[3, 4]} sizes="14vw" widths={[300, 500]} preset="zoom-reveal" reveal="clip-up" parallaxY="40px" zoom={1.2} className="rounded-[4px]" />
         </div>
-        <div className="px absolute bottom-[20vw] right-[24vw] z-20 hidden w-[9vw] lg:block" style={{ ["--sy" as string]: "-60px" }}>
-          <Photo img={IMG.libraryLamp} ratio="1/1" crop={[1, 1]} sizes="9vw" widths={[200, 360]} className="rounded-[4px]" />
+        <div className="px absolute bottom-[20vw] right-[24vw] z-20 hidden w-[9vw] lg:block" style={{ ["--sy" as string]: "-60px", ["--pr" as string]: "-2deg" }}>
+          <CinematicPhoto img={IMG.libraryLamp} ratio="1/1" crop={[1, 1]} sizes="9vw" widths={[200, 360]} preset="float" reveal="scale" parallaxY="30px" className="rounded-[4px]" />
+        </div>
+        {/* wide architectural strip that pans as you approach the footer */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-[8vw] z-0 hidden opacity-[0.16] lg:block" aria-hidden="true">
+          <CinematicPhoto img={IMG.hall} ratio="21/9" crop={[21, 9]} sizes="100vw" widths={[1200, 1800]} preset="horizontal-pan" reveal="none" parallaxX="80px" zoom={1.25} className="size-full" />
         </div>
 
         <div className="relative z-10 mt-12 flex flex-col gap-8 lg:mt-16 lg:flex-row lg:items-end lg:justify-between">

@@ -7,6 +7,8 @@ import { cn } from "@/utils/cn";
 import { Icon, type IconName } from "./Icon";
 import { StatusBar } from "./DeviceFrames";
 import type { CommunityStep } from "../data";
+import { PrototypeShot, type ShotName } from "./PrototypeShot";
+import { ScreenStatusBar } from "./ScreenStatusBar";
 
 function AppHeader({ title, sub }: { title: string; sub?: string }) {
   return (
@@ -39,7 +41,13 @@ function TabBar({ active }: { active: number }) {
 }
 
 /* ───────────────────────── Home dashboard ───────────────────────── */
-export function HomeScreen() {
+
+/**
+ * The mock is what the frame shows while the capture decodes (and if it never
+ * does). The capture carries the app's own navigation and tab bar, so the mock
+ * drops them underneath it — the frame's screen is always full.
+ */
+function HomeMock() {
   const quick: Array<[IconName, string]> = [
     ["calendar", "Timetable"],
     ["users", "Clubs"],
@@ -97,6 +105,34 @@ export function HomeScreen() {
         ))}
       </div>
       <TabBar active={0} />
+    </div>
+  );
+}
+
+export function HomeScreen() {
+  return (
+    <div className="relative size-full bg-app">
+      <HomeMock />
+      <PrototypeShot
+        name="home-dark"
+        priority
+        alt="Campus+ home screen: a greeting, quick links to the timetable, clubs, events, market, rides, housing and gigs, plus the campus feed composer."
+      />
+      <ScreenStatusBar />
+    </div>
+  );
+}
+
+/** The light-theme variant, used where the page is light. */
+export function HomeScreenLight() {
+  return (
+    <div className="relative size-full bg-[#f4efe6]">
+      <HomeMock />
+      <PrototypeShot
+        name="home-light"
+        alt="Campus+ home screen in the light theme, with the same greeting, quick links and campus feed."
+      />
+      <ScreenStatusBar tone="dark" />
     </div>
   );
 }
@@ -218,6 +254,35 @@ function EventsBody() {
   );
 }
 
+/**
+ * The captures that document each Community chapter, in the order the sequence
+ * runs. They are preloaded together and revealed with the same directional wipe
+ * the photographs beside them use, so the phone reads as one screen changing
+ * rather than four screens mounting.
+ */
+const COMMUNITY_SHOTS: Array<{ key: CommunityStep["key"]; name: ShotName; alt: string }> = [
+  {
+    key: "clubs",
+    name: "clubs",
+    alt: "Campus+ club directory, listing every club with its category and filtering by name, organisation type and membership.",
+  },
+  {
+    key: "communities",
+    name: "feed",
+    alt: "Campus+ communities feed, showing the discussion composer, GIF and file attachments, and the channels to follow.",
+  },
+  {
+    key: "discussions",
+    name: "composer",
+    alt: "Campus+ discussion composer, where a post is written, tagged as a discussion, and posted to the campus feed.",
+  },
+  {
+    key: "events",
+    name: "events",
+    alt: "Campus+ events screen with the activity calendar, agenda, calendar and upcoming views and a list of organisers.",
+  },
+];
+
 export function CommunityScreen({ step }: { step: CommunityStep["key"] }) {
   const titles: Record<CommunityStep["key"], [string, string]> = {
     clubs: ["Clubs", "Explore"],
@@ -226,6 +291,7 @@ export function CommunityScreen({ step }: { step: CommunityStep["key"] }) {
     events: ["Events", "This month"],
   };
   const [title, sub] = titles[step];
+  const index = COMMUNITY_SHOTS.findIndex((s) => s.key === step);
   return (
     <div className="relative size-full">
       <StatusBar />
@@ -237,6 +303,12 @@ export function CommunityScreen({ step }: { step: CommunityStep["key"] }) {
         {step === "events" && <EventsBody />}
       </div>
       <TabBar active={2} />
+      {COMMUNITY_SHOTS.map((shot, i) => (
+        <div key={shot.name} className="xfade-layer z-20" data-state={i === index ? "active" : i < index ? "before" : "after"} aria-hidden={i !== index}>
+          <PrototypeShot name={shot.name} alt={shot.alt} />
+        </div>
+      ))}
+      <ScreenStatusBar />
     </div>
   );
 }

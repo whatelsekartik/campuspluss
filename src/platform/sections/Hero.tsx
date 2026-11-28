@@ -73,7 +73,7 @@ export function Hero() {
       >
         <div data-tilt data-cursor="media">
         <div className="phone-in" style={{ ["--d" as string]: "140ms" }}>
-          <PhoneFrame label="Campus+ home screen showing the next lecture, quick links and today's campus updates (demonstration data)">
+          <PhoneFrame label="Campus+ home screen: the greeting, quick links to the timetable, clubs, events, market, rides, housing and gigs, and the campus feed">
             <HomeScreen />
           </PhoneFrame>
         </div>
@@ -98,7 +98,7 @@ export function Hero() {
         {/* annotation attached to the phone */}
         <div className="intro-fade absolute -left-[58%] top-[74%] hidden w-[40%] lg:block" style={{ ["--d" as string]: "1100ms" }}>
           <p className="caption text-stone">
-            <span className="text-ink">(01)</span> Up next — your next class, the room, and how long until it starts.
+            <span className="text-ink">(01)</span> One screen — the greeting, the shortcuts, and everything happening on campus today.
           </p>
           <span className="mt-2 block h-px w-[calc(100%+2.5rem)] bg-ink/30" />
         </div>

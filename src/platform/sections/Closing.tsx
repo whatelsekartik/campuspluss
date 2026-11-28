@@ -1,5 +1,7 @@
 import { useScrollProgress } from "../motion/scroll";
 import { CinematicPhoto } from "../components/CinematicPhoto";
+import { PhoneFrame } from "../components/DeviceFrames";
+import { HomeScreenLight } from "../components/AppScreens";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { Wordmark } from "../components/BrandMark";
 import { Icon } from "../components/Icon";
@@ -33,6 +35,18 @@ export function Closing() {
             </span>
           </span>
         </h2>
+
+        {/* the product itself, once more: the light theme, where the page is light */}
+        <div className="relative z-10 mx-auto mt-12 w-[min(46vw,220px)] lg:absolute lg:right-[6vw] lg:top-[42vh] lg:mt-0 lg:w-[min(13vw,214px)]">
+          <div className="phone-in" style={{ ["--d" as string]: "260ms" }}>
+            <PhoneFrame label="Campus+ home screen in the light theme">
+              <HomeScreenLight />
+            </PhoneFrame>
+          </div>
+          <p className="caption mt-3 text-stone lg:max-w-[10rem]">
+            <span className="text-ink">(07)</span> The same campus, in daylight.
+          </p>
+        </div>
 
         {/* slow-moving architecture around the statement: each shot wipes open, tilts inside its frame and floats on its own plane */}
         <CinematicPhoto

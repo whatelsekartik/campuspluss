@@ -23,7 +23,7 @@ const FINE_POINTER = "(hover: hover) and (pointer: fine)";
 
 const MAX_LENGTH = 190; // px of visible stroke
 const LIFE = 780; // ms before a point has faded completely
-const FOLLOW_TAU = 58; // ms, lag of the pencil tip behind the pointer
+const FOLLOW_TAU = 16; // ms, the nib sits on the cursor (a little lag only smooths jitter)
 const MIN_STEP = 1.2; // px the tip must travel before a point is recorded
 const MAX_STEP = 4.5; // px between recorded points (longer moves are subdivided)
 /** Pressure: slow drags bite deeper into the paper, fast flicks skip across it. */
@@ -59,6 +59,14 @@ export function CursorTrail() {
     let onDark = false;
     let last = 0;
     let box: [number, number, number, number] | null = null;
+    /** union of everything drawn this frame; clear() erases exactly this */
+    const marks = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+    const mark = (x: number, y: number, pad = 0) => {
+      if (x - pad < marks.x0) marks.x0 = x - pad;
+      if (y - pad < marks.y0) marks.y0 = y - pad;
+      if (x + pad > marks.x1) marks.x1 = x + pad;
+      if (y + pad > marks.y1) marks.y1 = y + pad;
+    };
     // eased instrument state: nib width, lift over media, press, ring
     let nib = 1;
     let lift = 0;
@@ -70,16 +78,30 @@ export function CursorTrail() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(window.innerWidth * dpr);
       canvas.height = Math.round(window.innerHeight * dpr);
+      // the CSS box is the viewport; the bitmap must match it or every point is
+      // drawn against a 300x150 default and lands in the wrong place entirely
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.lineCap = "butt";
       ctx.lineJoin = "round";
       box = null; // resizing clears the bitmap
     };
+    resize(); // must run before the first frame
 
     const clear = () => {
       if (!box) return;
       ctx.clearRect(box[0] - 8, box[1] - 8, box[2] - box[0] + 16, box[3] - box[1] + 16);
       box = null;
+    };
+
+    /** Publish this frame's marks as the box the next frame will erase. */
+    const commit = () => {
+      if (marks.x1 >= marks.x0) box = [marks.x0, marks.y0, marks.x1, marks.y1];
+      marks.x0 = Infinity;
+      marks.y0 = Infinity;
+      marks.x1 = -Infinity;
+      marks.y1 = -Infinity;
     };
 
     const draw = (now: number) => {
@@ -98,10 +120,6 @@ export function CursorTrail() {
 
       const n = points.length;
       if (n >= 3) {
-        let x0 = Infinity;
-        let y0 = Infinity;
-        let x1 = -Infinity;
-        let y1 = -Infinity;
         // warm graphite, inverted on dark surfaces; clay undertone for grain
         const ink = onDark ? "236,226,208" : "46,40,34";
         const grain = onDark ? "214,168,138" : "150,88,58";
@@ -163,26 +181,17 @@ export function CursorTrail() {
             ctx.stroke();
           }
 
-          if (b.x < x0) x0 = b.x;
-          if (b.y < y0) y0 = b.y;
-          if (b.x > x1) x1 = b.x;
-          if (b.y > y1) y1 = b.y;
-          if (c.x < x0) x0 = c.x;
-          if (c.y < y0) y0 = c.y;
-          if (c.x > x1) x1 = c.x;
-          if (c.y > y1) y1 = c.y;
-          if (a.x < x0) x0 = a.x;
-          if (a.y < y0) y0 = a.y;
-          if (a.x > x1) x1 = a.x;
-          if (a.y > y1) y1 = a.y;
+          // the erased region grows to include the whole stroke; the soft pad
+          // and the fibre sit a couple of px outside the centre line
+          mark(a.x, a.y, 4);
+          mark(c.x, c.y, 4);
         }
-        if (x1 >= x0) box = [x0, y0, x1, y1];
       }
 
       // ── nib: a hairline cross marks exactly where the pencil is ──
       if (pointer.active) {
-        const nx = tip.x;
-        const ny = tip.y;
+        const nx = pointer.x;
+        const ny = pointer.y;
         const len = 3.1 + ring * 2.2 + press * 1.6;
         const ink = onDark ? "236,226,208" : "46,40,34";
         ctx.strokeStyle = `rgba(${ink},${(0.3 + ring * 0.22 + press * 0.2).toFixed(3)})`;
@@ -193,6 +202,7 @@ export function CursorTrail() {
         ctx.moveTo(nx, ny - len);
         ctx.lineTo(nx, ny + len);
         ctx.stroke();
+        mark(nx, ny, len + 2);
 
         // ring opens on interactive surfaces, closes on press
         if (ring > 0.02 || press > 0.02) {
@@ -202,6 +212,7 @@ export function CursorTrail() {
           ctx.beginPath();
           ctx.arc(nx, ny, rr, 0, Math.PI * 2);
           ctx.stroke();
+          mark(nx, ny, rr + 2);
         }
       }
 
@@ -212,17 +223,22 @@ export function CursorTrail() {
         ctx.strokeStyle = `rgba(150, 96, 74, ${(p * 0.32).toFixed(3)})`;
         ctx.lineWidth = 0.9 * p;
         ctx.beginPath();
-        ctx.arc(tip.x, tip.y, rr, 0, Math.PI * 2);
+        ctx.arc(pointer.x, pointer.y, rr, 0, Math.PI * 2);
         ctx.stroke();
+        mark(pointer.x, pointer.y, rr + 3);
         ctx.strokeStyle = `rgba(${onDark ? "236,226,208" : "46,40,34"},${(p * 0.3).toFixed(3)})`;
         for (let i = 0; i < 4; i++) {
           const a = (Math.PI / 2) * i + 0.78;
           ctx.beginPath();
-          ctx.moveTo(tip.x + Math.cos(a) * (rr - 4), tip.y + Math.sin(a) * (rr - 4));
-          ctx.lineTo(tip.x + Math.cos(a) * (rr + 4), tip.y + Math.sin(a) * (rr + 4));
+          ctx.moveTo(pointer.x + Math.cos(a) * (rr - 4), pointer.y + Math.sin(a) * (rr - 4));
+          ctx.lineTo(pointer.x + Math.cos(a) * (rr + 4), pointer.y + Math.sin(a) * (rr + 4));
           ctx.stroke();
         }
+        mark(pointer.x, pointer.y, rr + 5);
       }
+
+      // whatever was drawn above becomes the region the next frame erases
+      commit();
     };
 
     const frame = (now: number) => {
@@ -230,8 +246,8 @@ export function CursorTrail() {
       last = now;
       if (!pointer.active) return;
 
-      const target = pointer.x2;
-      const targetY = pointer.y2;
+      const target = pointer.x;
+      const targetY = pointer.y;
       if (!tip.seen) {
         tip.seen = true;
         tip.x = target;

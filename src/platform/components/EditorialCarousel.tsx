@@ -160,13 +160,20 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
     // while scroll walks through the categories. Below `lg` it is a plain block
     // and the stage swipes.
     <div
-      ref={scene}
+      // BOTH refs on the tall scene: the scroll engine must measure the element
+      // that actually scrolls past (a "sticky" mode reads height - viewport, so
+      // measuring the short pinned child yields a negative span and p stays 0).
+      // The scene also carries .scene, which is what publishes --p to its
+      // descendants — the category titles read it.
+      ref={(node) => {
+        scene.current = node;
+        sceneRef.current = node;
+      }}
       className={cn("scene relative", driven && "h-[calc(var(--n) * 62vh + 20vh)]")}
       style={{ ["--n" as string]: n }}
     >
       <div className={cn(driven && "sticky top-0 flex h-[100svh] items-center overflow-hidden")}>
     <div
-      ref={sceneRef}
       role="region"
       aria-roledescription="carousel"
       aria-label="Marketplace categories"

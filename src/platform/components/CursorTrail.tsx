@@ -19,7 +19,14 @@ import { useEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { onPointerFrame, pointer } from "../motion/pointer";
 
-const FINE_POINTER = "(hover: hover) and (pointer: fine)";
+// any positive pointer signal, not a strict conjunction: an embedded preview
+// can report only one of these for a real mouse
+const FINE_POINTER = [
+  "(hover: hover) and (pointer: fine)",
+  "(pointer: fine)",
+  "(any-pointer: fine)",
+  "(any-hover: hover)",
+];
 
 const MAX_LENGTH = 190; // px of visible stroke
 const LIFE = 780; // ms before a point has faded completely
@@ -31,21 +38,25 @@ const SPEED_TO_PRESSURE = 0.9;
 
 type Point = { x: number; y: number; t: number; g: number };
 
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(() => typeof window !== "undefined" && window.matchMedia(query).matches);
+function useAnyMediaQuery(queries: string[]) {
+  const [matches, setMatches] = useState(
+    () => typeof window !== "undefined" && !!window.matchMedia && queries.some((q) => window.matchMedia(q).matches),
+  );
   useEffect(() => {
-    const mq = window.matchMedia(query);
-    const on = () => setMatches(mq.matches);
+    const mqs = queries.map((q) => window.matchMedia(q));
+    const on = () => setMatches(mqs.some((mq) => mq.matches));
     on();
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, [query]);
+    mqs.forEach((mq) => mq.addEventListener("change", on));
+    return () => mqs.forEach((mq) => mq.removeEventListener("change", on));
+    // the query list is a module constant
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return matches;
 }
 
 export function CursorTrail() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fine = useMediaQuery(FINE_POINTER);
+  const fine = useAnyMediaQuery(FINE_POINTER);
   const reduced = usePrefersReducedMotion();
   const enabled = fine && !reduced;
 
@@ -310,6 +321,8 @@ export function CursorTrail() {
       points.length = 0;
       clear();
       tip.seen = false;
+      // do not latch: the next move must be able to draw immediately
+      last = 0;
     };
     document.documentElement.addEventListener("pointerleave", wipe);
     window.addEventListener("blur", wipe);
@@ -325,6 +338,15 @@ export function CursorTrail() {
     };
   }, [enabled]);
 
-  if (!enabled) return null;
-  return <canvas ref={canvasRef} aria-hidden="true" className="cursor-trail pointer-events-none fixed inset-0 z-[80] size-full" />;
+  // Always mounted. `enabled` gates the drawing, not the element, so the trail
+  // can never be "missing because the canvas is missing" without us noticing.
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      data-trail={enabled ? "on" : "off"}
+      className="cursor-trail pointer-events-none fixed inset-0 z-[80] size-full"
+      style={enabled ? undefined : { display: "none" }}
+    />
+  );
 }

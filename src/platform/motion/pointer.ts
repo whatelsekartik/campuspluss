@@ -187,7 +187,9 @@ function tick() {
 
   subs.forEach((fn) => fn(now));
 
-  const alive = pointer.active && now - lastMove < 1100;
+  // Keep running until the stroke has actually finished fading. The trail is
+  // ~780ms long, so a shorter window leaves the tail frozen on the canvas.
+  const alive = pointer.active && now - lastMove < 1400;
   if (alive || pointer.pulse > 0.01) raf = requestAnimationFrame(tick);
 }
 
@@ -195,11 +197,18 @@ function kick() {
   if (!raf) raf = requestAnimationFrame(tick);
 }
 
+/** Any pointer that can hover is a mouse-class device, whatever it reports. */
+function hasFinePointer() {
+  if (typeof window === "undefined" || !window.matchMedia) return false;
+  const any = ["(hover: hover) and (pointer: fine)", "(pointer: fine)", "(any-pointer: fine)", "(any-hover: hover)"];
+  // one positive signal is enough; embeds and some browsers report only one
+  return any.some((q) => window.matchMedia(q).matches);
+}
+
 export function startPointerEngine() {
   if (started || typeof window === "undefined") return () => {};
-  const fine = window.matchMedia("(pointer: fine)").matches;
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!fine || reduce) return () => {};
+  if (!hasFinePointer()) return () => {};
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return () => {};
 
   started = true;
   pointer.enabled = true;
@@ -218,6 +227,14 @@ export function startPointerEngine() {
   };
 
   const onOver = (e: PointerEvent) => {
+    // a pointer that is already inside the window must count as active too,
+    // otherwise nothing runs until the next move event
+    if (e.pointerType === "mouse" || e.pointerType === "pen") {
+      pointer.active = true;
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
+      lastMove = pointer.ts = performance.now();
+    }
     setMode(e.target);
     const el = e.target instanceof Element ? e.target : null;
     const tilt = el?.closest<HTMLElement>("[data-tilt]") ?? null;

@@ -48,6 +48,8 @@ function CommunityIntro() {
         {tiles.map((t, i) => (
           <figure key={t.cap} className={cn(t.w, t.mt, i === 2 && "max-lg:ml-auto")}>
             <CinematicPhoto
+              data-hover-media
+              data-sheen
               img={t.img}
               preset={["wipe", "parallax", "float"]}
               params={{ from: t.from, drift: [0, t.drift], pan: t.pan, zoom: [1.3, 1.14], revealZoom: 0.18, window: [0.02 + i * 0.02, 0.3 + i * 0.03] }}
@@ -144,9 +146,10 @@ function CommunitySequence() {
                   type="button"
                   onClick={() => jump(i)}
                   aria-current={i === idx ? "step" : undefined}
+                  data-magnet="26"
                   className={cn(
-                    "eyebrow rounded-full border px-3.5 py-2 transition-colors",
-                    i === idx ? "border-ivory bg-ivory text-ink" : "border-ivory/20 text-ivory/60 hover:text-ivory",
+                    "eyebrow pressable rounded-full border px-3.5 py-2 transition-colors",
+                    i === idx ? "border-ivory bg-ivory text-ink" : "border-ivory/20 text-ivory/60 hover:border-ivory/50 hover:text-ivory",
                   )}
                 >
                   {s.title}
@@ -178,6 +181,7 @@ function CommunitySequence() {
           {/* right: swapping photograph */}
           <div className="absolute bottom-[6vh] left-[4vw] z-0 w-[30vw] lg:static lg:col-span-3 lg:col-start-10 lg:w-auto">
             {/* shots swap with a wipe that follows the scroll direction; every shot keeps panning with the sequence */}
+            <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
             <CrossfadeStack
               images={COMMUNITY_STEPS.map((c) => c.photo)}
               index={idx}
@@ -187,6 +191,7 @@ function CommunitySequence() {
               widths={[360, 640]}
               className="rounded-[4px] bg-charcoal"
             />
+            </div>
             <p key={step.key + "cap"} className="soft-in caption mt-2 hidden text-ivory/45 lg:block">{step.photo.alt}. Illustrative.</p>
           </div>
         </div>

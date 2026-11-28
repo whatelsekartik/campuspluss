@@ -38,6 +38,8 @@ function Housing() {
     <div ref={ref} className="scene relative grid gap-10 lg:grid-cols-12 lg:items-end">
       <div className="relative lg:col-span-5">
         <CinematicPhoto
+          data-hover-media
+          data-sheen
           img={IMG.bedroom}
           preset={["wipe", "vertical-pan", "float"]}
           params={{ from: "up", drift: [0, 70], pan: [0, -22], zoom: [1.3, 1.22], revealZoom: 0.16, window: [0.04, 0.34] }}
@@ -49,7 +51,9 @@ function Housing() {
         />
         <div className="px absolute -bottom-8 right-4 w-[min(78%,300px)] lg:-right-[18%]" style={{ ["--sy" as string]: "-120px" }}>
           <div data-reveal style={{ ["--rd" as string]: "350ms", ["--rx" as string]: "40px", ["--rr" as string]: "4deg" }}>
-            <Fragment icon="home" kicker="Housing · listing" title="Room near campus" meta="Shared · walking distance" />
+            <div data-tilt>
+              <Fragment icon="home" kicker="Housing · listing" title="Room near campus" meta="Shared · walking distance" />
+            </div>
           </div>
         </div>
       </div>
@@ -86,6 +90,7 @@ function Rides() {
           clipPath: "inset(calc((1 - var(--r)) * 16%) calc((1 - var(--r)) * 11%) round 6px)",
         }}
       >
+        <div data-sheen className="relative">
         <CinematicPhoto
           img={IMG.bicycle}
           scene="inherit"
@@ -97,15 +102,18 @@ function Rides() {
           widths={[800, 1280, 1800]}
           frameClassName="max-sm:!aspect-[4/3]"
         />
+        </div>
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(21,19,15,.55),transparent_60%)]" />
         {/* type rides against the pan, so word and photograph cross each other */}
         <p className="display px absolute bottom-[6%] left-[4%] whitespace-nowrap text-[22vw] text-ivory lg:text-[14vw]" style={{ ["--sx" as string]: "14vw" }}>
-          Rides<span className="serif-accent text-[0.45em]"> home</span>
+          Rides          <span className="serif-accent text-[0.45em]"> home</span>
         </p>
       </div>
       <div className="px relative z-10 -mt-10 flex justify-end pr-4 lg:-mt-16 lg:pr-[6%]" style={{ ["--sy" as string]: "-70px" }}>
         <div className="w-[min(88%,340px)]" data-reveal style={{ ["--rd" as string]: "200ms", ["--rx" as string]: "60px", ["--ry" as string]: "0px" }}>
-          <Fragment icon="car" kicker="Ride · offering" title="Campus to railway station" meta="Friday evening · 2 seats" />
+          <div data-tilt>
+            <Fragment icon="car" kicker="Ride · offering" title="Campus to railway station" meta="Friday evening · 2 seats" />
+          </div>
         </div>
       </div>
     </div>
@@ -128,6 +136,8 @@ function LostFound() {
       </div>
       <div className="relative h-[110vw] sm:h-[70vw] lg:col-span-5 lg:col-start-8 lg:h-[40vw]">
         <CinematicPhoto
+          data-hover-media
+          data-sheen
           img={IMG.keys}
           preset={["stacked-reveal", "parallax", "float"]}
           params={{ enter: [-180, 60], settle: -11, rotate: -2, drift: [0, -80], pan: [0, 10], window: [0.03, 0.34] }}
@@ -139,6 +149,8 @@ function LostFound() {
           frameClassName="rounded-[4px] shadow-[0_30px_50px_-28px_rgba(52,38,22,.55)]"
         />
         <CinematicPhoto
+          data-hover-media
+          data-sheen
           img={IMG.wallet}
           preset={["stacked-reveal", "parallax", "float"]}
           params={{ enter: [200, 90], settle: 12, rotate: 3, drift: [0, 100], pan: [8, -8], window: [0.08, 0.4] }}
@@ -178,6 +190,8 @@ function GigsProjects() {
               {it.t}
             </p>
             <CinematicPhoto
+              data-hover-media
+              data-sheen
               img={it.img}
               preset={["wipe", "parallax"]}
               params={{ from: it.from, pan: it.pan, zoom: [1.32, 1.18], revealZoom: 0.2, window: [0.05, 0.36] }}
@@ -202,7 +216,9 @@ function GigsProjects() {
               <p className="mt-3 max-w-sm text-[15px] leading-[1.6] text-ivory/70">{it.d}</p>
             </div>
             <div className="mt-6 max-w-[320px]" data-reveal style={{ ["--rd" as string]: "260ms", ["--rx" as string]: i === 0 ? "-30px" : "30px", ["--rr" as string]: i === 0 ? "-4deg" : "4deg" }}>
-              <Fragment icon={it.icon} kicker={it.f[0]} title={it.f[1]} meta={it.f[2]} />
+              <div data-tilt>
+                <Fragment icon={it.icon} kicker={it.f[0]} title={it.f[1]} meta={it.f[2]} />
+              </div>
             </div>
           </article>
         ))}
@@ -238,7 +254,7 @@ function Notices() {
         {slips.map((s, i) => (
           <li
             key={s.t}
-            className={`paper ${s.c} relative rounded-[3px] p-5 shadow-[0_18px_30px_-20px_rgba(52,38,22,.45)] sm:p-7 ${i % 2 ? "mt-10" : ""}`}
+            className={`paper-lift paper ${s.c} relative rounded-[3px] p-5 shadow-[0_18px_30px_-20px_rgba(52,38,22,.45)] sm:p-7 ${i % 2 ? "mt-10" : ""}`}
             style={{
               ["--rot" as string]: s.r,
               ["--er" as string]: s.er,

@@ -36,9 +36,9 @@ export function Academic() {
                 Choose your division and see the day: lectures, labs, rooms and batches, with the next slot highlighted.
               </p>
               <ul className="caption space-y-3 border-l border-ink/15 pl-5 text-stone" data-reveal style={{ ["--rd" as string]: "120ms" }}>
-                <li><span className="text-ink">Divisions</span>, switch in one tap</li>
-                <li><span className="text-ink">Days</span>, Monday to Saturday</li>
-                <li><span className="text-ink">Slot details</span>, tap to expand</li>
+                <li className="scan-row -mx-2 rounded-md px-2 py-1"><span className="text-ink">Divisions</span>, switch in one tap</li>
+                <li className="scan-row -mx-2 rounded-md px-2 py-1"><span className="text-ink">Days</span>, Monday to Saturday</li>
+                <li className="scan-row -mx-2 rounded-md px-2 py-1"><span className="text-ink">Slot details</span>, tap to expand</li>
               </ul>
             </div>
             <a
@@ -64,21 +64,26 @@ export function Academic() {
               widths={[480, 800, 1100]}
               className="absolute -right-5 -top-16 z-0 w-[70%] sm:-right-6 lg:-right-10 lg:-top-24 lg:w-[78%]"
               frameClassName="rounded-[4px]"
+              data-hover-media
+              data-sheen
             >
               <p className="caption mt-2 text-right text-stone">Illustrative photography</p>
             </CinematicPhoto>
 
             {/* main frame: unveiled through a rising mask (one-off, so the controls are never half-clipped) */}
             <div className="relative z-10 pt-[38%] lg:absolute lg:-left-[6%] lg:top-[18%] lg:w-[86%] lg:pt-0" data-reveal-group>
+              <div data-tilt="soft" data-cursor="media">
               <div className="mask-reveal">
                 <BrowserFrame url={`${ROUTES.timetable} · ${divLabel}`}>
                   <TimetablePreview onDivision={setDivLabel} />
                 </BrowserFrame>
               </div>
+              </div>
             </div>
 
             {/* floating schedule fragments: staggered, each settling from its own angle, on separate depth planes */}
             <div className="px absolute -left-2 top-[30%] z-20 hidden sm:block lg:-left-[16%] lg:top-[10%]" style={{ ["--sy" as string]: "150px" }}>
+              <div data-tilt>
               <div
                 className="rotate-[-3deg] rounded-2xl bg-ivory px-4 py-3 shadow-[0_24px_40px_-24px_rgba(52,38,22,.5)] ring-1 ring-ink/5"
                 data-reveal
@@ -88,8 +93,10 @@ export function Academic() {
                 <p className="mt-1 text-sm font-semibold">14:00 – 16:00</p>
                 <p className="caption text-stone">Two-hour slot, batch-wise</p>
               </div>
+              </div>
             </div>
             <div className="px absolute -bottom-6 right-2 z-20 lg:-bottom-2 lg:right-[2%]" style={{ ["--sy" as string]: "-110px" }}>
+              <div data-tilt>
               <div
                 className="flex items-center gap-3 rounded-full bg-ink py-2 pl-2 pr-5 text-ivory shadow-[0_24px_40px_-20px_rgba(20,18,15,.6)]"
                 data-reveal
@@ -102,6 +109,7 @@ export function Academic() {
                   <span className="block text-[13px] font-medium">Next up, highlighted</span>
                   <span className="caption block opacity-60">Based on your device time</span>
                 </span>
+              </div>
               </div>
             </div>
           </div>

@@ -137,7 +137,7 @@ export function ShowcaseNav() {
         )}
       >
         <nav aria-label="Platform" className="mx-auto flex h-14 max-w-[1680px] items-center px-4 sm:px-6 lg:px-10">
-          <a href="#top" onClick={(e) => go(e, "top")} className="shrink-0" aria-label="Campus+ platform, back to top">
+          <a href="#top" onClick={(e) => go(e, "top")} data-magnet="18" className="shrink-0" aria-label="Campus+ platform, back to top">
             <Wordmark tone={tone === "light" ? "light" : "dark"} />
           </a>
 
@@ -150,7 +150,7 @@ export function ShowcaseNav() {
                   onClick={(e) => go(e, n.id)}
                   aria-current={activeNav === n.id ? "true" : undefined}
                   className={cn(
-                    "eyebrow block whitespace-nowrap px-4 py-2 transition-opacity duration-300",
+                    "ink-link eyebrow block whitespace-nowrap px-4 py-2 transition-opacity duration-300",
                     activeNav === n.id ? "opacity-100" : "opacity-55 hover:opacity-100",
                   )}
                 >
@@ -171,8 +171,9 @@ export function ShowcaseNav() {
           <div className="ml-auto flex items-center gap-2 whitespace-nowrap lg:ml-0">
             <a
               href={ROUTES.login}
+              data-magnet="26"
               className={cn(
-                "hidden rounded-full px-4 py-2 text-[13px] font-medium transition-colors sm:inline-flex",
+                "pressable hidden rounded-full px-4 py-2 text-[13px] font-medium transition-colors sm:inline-flex",
                 tone === "light" ? "bg-ivory text-ink hover:bg-white" : "bg-ink text-ivory hover:bg-charcoal",
               )}
             >

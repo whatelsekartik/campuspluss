@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { ShowcaseNav } from "./components/ShowcaseNav";
 import { CursorTrail } from "./components/CursorTrail";
+import { TourHud } from "./components/TourHud";
 import { Hero } from "./sections/Hero";
 import { Everything } from "./sections/Everything";
 import { Academic } from "./sections/Academic";
@@ -41,6 +42,7 @@ export default function PlatformPage() {
     <div data-platform className="bg-ivory text-ink">
       <ShowcaseNav />
       <CursorTrail />
+      <TourHud />
       <main id="main">
         <Hero />
         <Everything />

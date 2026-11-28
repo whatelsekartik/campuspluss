@@ -6,6 +6,7 @@ import { HomeScreen } from "../components/AppScreens";
 import { CinematicPhoto } from "../components/CinematicPhoto";
 import { Icon } from "../components/Icon";
 import { useSmoothNav } from "../components/ShowcaseNav";
+import { startTour } from "../motion/tour";
 import { IMG, ROUTES } from "../data";
 
 /**
@@ -70,10 +71,12 @@ export function Hero() {
         className="rm-static relative z-10 mx-auto -mt-[10vw] w-[min(62vw,300px)] translate-x-[12%] will-change-transform lg:absolute lg:left-[59vw] lg:top-[11vh] lg:mt-0 lg:w-[clamp(250px,21vw,360px)] lg:translate-x-0"
         style={phoneExit}
       >
+        <div data-tilt data-cursor="media">
         <div className="phone-in" style={{ ["--d" as string]: "140ms" }}>
           <PhoneFrame label="Campus+ home screen showing the next lecture, quick links and today's campus updates (demonstration data)">
             <HomeScreen />
           </PhoneFrame>
+        </div>
         </div>
         {/* mobile-only companion photo */}
         <div className="absolute -left-[39%] bottom-[10%] w-[33%] lg:hidden" aria-hidden="true">
@@ -103,6 +106,7 @@ export function Hero() {
 
       {/* ── Photographs: staggered wipes from different edges, each on its own depth plane ── */}
       <div className="rm-static absolute right-[3vw] top-[19vh] z-0 hidden w-[10.5vw] will-change-transform lg:block" style={drift("170px")}>
+        <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
         <CinematicPhoto
           img={IMG.concreteFacade}
           scene="inherit"
@@ -115,11 +119,13 @@ export function Hero() {
           priority
           frameClassName="rounded-[4px]"
         />
+        </div>
         <p className="caption intro-fade mt-2 text-stone" style={{ ["--d" as string]: "1000ms" }}>
           Spaces you walk through daily.
         </p>
       </div>
       <div className="rm-static absolute bottom-[6vh] right-[2.5vw] z-0 hidden w-[17vw] will-change-transform lg:block" style={drift("-230px")}>
+        <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
         <CinematicPhoto
           img={IMG.deskSun}
           scene="inherit"
@@ -132,8 +138,10 @@ export function Hero() {
           priority
           frameClassName="rounded-[4px]"
         />
+        </div>
       </div>
       <div className="rm-static absolute bottom-[5vh] left-[31vw] z-0 hidden w-[12.5vw] will-change-transform lg:block" style={drift("-80px")}>
+        <div data-hover-media data-sheen className="relative overflow-hidden rounded-[4px]">
         <CinematicPhoto
           img={IMG.libraryAisle}
           scene="inherit"
@@ -146,6 +154,7 @@ export function Hero() {
           priority
           frameClassName="rounded-[4px]"
         />
+        </div>
       </div>
 
       {/* ── CTA block ── */}
@@ -157,15 +166,27 @@ export function Hero() {
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <a
             href="#how"
-            onClick={(e) => go(e, "how")}
-            className="group inline-flex items-center gap-3 rounded-full bg-ink py-2 pl-5 pr-2 text-sm font-medium text-ivory"
+            onClick={(e) => {
+              // the guided sweep is the point of this control: keep the link
+              // semantics for no-JS / new-tab, take over for a plain click
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+                go(e, "how");
+                return;
+              }
+              e.preventDefault();
+              history.replaceState(null, "", "#how");
+              startTour();
+            }}
+            aria-label="Explore the platform: a guided scroll through each section"
+            data-magnet="46"
+            className="pressable group inline-flex items-center gap-3 rounded-full bg-ink py-2 pl-5 pr-2 text-sm font-medium text-ivory"
           >
             Explore the platform
             <span className="grid size-8 place-items-center rounded-full bg-ivory text-ink transition-transform duration-500 group-hover:translate-y-0.5">
               <Icon name="arrowDown" size={15} />
             </span>
           </a>
-          <a href={ROUTES.login} className="rounded-full border border-ink/20 px-5 py-3 text-sm font-medium hover:border-ink">
+          <a href={ROUTES.login} data-magnet="34" className="pressable rounded-full border border-ink/20 px-5 py-3 text-sm font-medium hover:border-ink">
             Get started
           </a>
         </div>

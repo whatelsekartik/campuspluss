@@ -45,6 +45,8 @@ export function Closing() {
           widths={[300, 500, 800]}
           className="z-0 ml-auto mt-10 w-[56%] lg:absolute lg:right-[6vw] lg:top-[16vh] lg:mt-0 lg:w-[14vw]"
           frameClassName="rounded-[4px]"
+          data-hover-media
+          data-sheen
         />
         <CinematicPhoto
           img={IMG.libraryLamp}
@@ -56,6 +58,8 @@ export function Closing() {
           widths={[200, 360]}
           className="bottom-[24vw] right-[24vw] z-20 hidden w-[9vw] lg:absolute lg:block"
           frameClassName="rounded-[4px]"
+          data-hover-media
+          data-sheen
         />
 
         <div className="relative z-10 mt-12 flex flex-col gap-8 lg:mt-16 lg:flex-row lg:items-end lg:justify-between">
@@ -64,16 +68,16 @@ export function Closing() {
             needed.
           </p>
           <div className="flex flex-wrap gap-3" data-reveal style={{ ["--rd" as string]: "100ms" }}>
-            <a href={ROUTES.app} className="group inline-flex items-center gap-3 rounded-full bg-ink py-2 pl-6 pr-2 text-sm font-medium text-ivory">
+            <a href={ROUTES.app} data-magnet="44" className="pressable group inline-flex items-center gap-3 rounded-full bg-ink py-2 pl-6 pr-2 text-sm font-medium text-ivory">
               Open Campus+
               <span className="grid size-9 place-items-center rounded-full bg-ivory text-ink transition-transform duration-500 group-hover:rotate-45">
                 <Icon name="arrowUpRight" size={16} />
               </span>
             </a>
-            <a href={ROUTES.login} className="rounded-full border border-ink/20 px-6 py-3.5 text-sm font-medium hover:border-ink">
+            <a href={ROUTES.login} data-magnet="30" className="pressable rounded-full border border-ink/20 px-6 py-3.5 text-sm font-medium hover:border-ink">
               Sign in
             </a>
-            <a href={ROUTES.timetable} className="rounded-full px-4 py-3.5 text-sm font-medium underline decoration-ink/30 underline-offset-4 hover:decoration-ink">
+            <a href={ROUTES.timetable} className="ink-link rounded-full px-4 py-3.5 text-sm font-medium underline decoration-ink/30 underline-offset-4 hover:decoration-ink">
               Public timetable
             </a>
           </div>

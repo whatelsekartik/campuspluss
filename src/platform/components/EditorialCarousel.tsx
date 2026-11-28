@@ -99,6 +99,7 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
       <div className="grid gap-y-8 lg:grid-cols-12 lg:gap-x-6">
         {/* ── stage: backdrop track + layered stack ── */}
         <div className="relative lg:col-span-8 lg:col-start-5 lg:row-start-1">
+          <div data-tilt="soft" data-sheen data-cursor="drag">
           <div
             ref={stageRef}
             onPointerDown={onPointerDown}
@@ -144,6 +145,7 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
             <p key={slide.id + "c"} className="soft-in caption absolute bottom-4 left-4 right-4 max-w-sm text-ivory sm:bottom-6 sm:left-6">
               {slide.backdrop.alt}. Photo: {slide.backdrop.credit} / Pexels
             </p>
+          </div>
           </div>
 
           {/* layered image stack overlapping the stage edge */}
@@ -196,7 +198,8 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
               type="button"
               onClick={prev}
               aria-label="Previous category"
-              className="group grid size-14 place-items-center rounded-full border border-ink/25 transition-colors hover:border-ink lg:size-16"
+              data-magnet="30"
+              className="pressable group grid size-14 place-items-center rounded-full border border-ink/25 transition-colors hover:border-ink lg:size-16"
             >
               <Icon name="arrowLeft" size={22} className="transition-transform duration-500 group-hover:-translate-x-1" />
             </button>
@@ -204,13 +207,14 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
               type="button"
               onClick={next}
               aria-label="Next category"
-              className="group grid size-14 place-items-center rounded-full bg-ink text-ivory transition-colors hover:bg-charcoal lg:size-16"
+              data-magnet="30"
+              className="pressable group grid size-14 place-items-center rounded-full bg-ink text-ivory transition-colors hover:bg-charcoal lg:size-16"
             >
               <Icon name="arrowRight" size={22} className="transition-transform duration-500 group-hover:translate-x-1" />
             </button>
-            <button type="button" onClick={next} className="ml-3 hidden text-left sm:block" aria-label={`Next: ${following.title}`}>
+            <button type="button" onClick={next} data-magnet="22" className="group ml-3 hidden text-left sm:block" aria-label={`Next: ${following.title}`}>
               <span className="eyebrow block text-stone">Next</span>
-              <span className="text-sm font-medium">{following.title}</span>
+              <span className="ink-link inline-block text-sm font-medium">{following.title}</span>
             </button>
           </div>
 
@@ -225,7 +229,7 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
                 aria-current={i === index ? "true" : undefined}
                 className="group relative h-6 flex-1"
               >
-                <span className="absolute inset-x-0 top-1/2 h-px bg-ink/20" />
+                <span className="absolute inset-x-0 top-1/2 h-px bg-ink/20 transition-all duration-300 group-hover:h-[2px] group-hover:bg-ink/40" />
                 <span
                   className="absolute left-0 top-1/2 h-px w-full origin-left bg-ink transition-transform duration-700"
                   style={{ transform: `scaleX(${i <= index ? 1 : 0})` }}

@@ -159,9 +159,16 @@
 
 /* ───────────────────────── Scroll-linked helpers ─────────────────────────
    The shared engine (motion/scroll.ts) writes a single --p (0..1) per scene;
-   everything else is pure CSS. --p falls back to 0.5 = neutral / revealed, so
-   nothing can stay hidden if the engine never runs. --k scales parallax
-   distances down on small screens.                                          */
+   everything else is pure CSS. --k scales parallax distances down on small
+   screens.
+
+   .scene is what publishes --p: declaring it gives the subtree a neutral 0.5
+   even if the engine never runs. Everything below depends on --p being DEFINED,
+   and an undefined custom property does NOT degrade gracefully — it makes the
+   whole calc() invalid, and an invalid transform/opacity is dropped outright.
+   So a piece of choreography whose element sits outside every .scene is frozen
+   at its start pose rather than merely un-animated. Every element that reads
+   --p must have a .scene (or an engine ref) at or above it.                   */
 :root {
   --k: 1;
 }

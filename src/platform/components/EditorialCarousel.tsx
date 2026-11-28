@@ -4,7 +4,7 @@ import { Photo } from "./Photo";
 import { Icon } from "./Icon";
 import type { MarketCategory } from "../data";
 import { useScrollProgress } from "../motion/scroll";
-import { usePrefersReducedMotion, useWideViewport } from "../motion/reveal";
+import { usePrefersReducedMotion } from "../motion/reveal";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -31,11 +31,11 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
   const n = slides.length;
   const reduced = usePrefersReducedMotion();
 
-  const wide = useWideViewport();
-  /** scroll drives the carousel on wide viewports, where there is room for a pinned scene */
-  const driven = wide && !reduced;
-  /** the reader has clicked / dragged: stop rewriting the index from scroll */
-  const [owned, setOwned] = useState(false);
+  /** Scroll drives the carousel everywhere, exactly as it does in section 04.
+   *  This used to be gated on a `min-width: 1024px` query, so on any narrower
+   *  viewport (a phone, or a preview pane) nothing pinned and the section read
+   *  as a static block — which is why it never looked like 04. */
+  const driven = !reduced;
   /** fractional position in slides (0 → n), written by the scroll scene */
   const [sp, setSp] = useState(0);
   /** travel direction, so every shot enters from the side scroll is heading */
@@ -43,23 +43,39 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
 
   const currentRef = useRef(0);
   const dirRef = useRef<1 | -1>(1);
-  const ownedRef = useRef(false);
   /** last touch gesture on the stage, so a vertical page scroll is not hijacked */
   const touch = useRef<{ x: number; y: number; horizontal: boolean | null } | null>(null);
+
+  /** Scroll to the band that makes `i` current, so the page and the stage agree. */
+  const scrollToIndex = useCallback(
+    (i: number) => {
+      const el = scene.current;
+      if (!el || !driven) return false;
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const total = el.offsetHeight - window.innerHeight;
+      if (total <= 0) return false;
+      window.scrollTo({ top: top + ((i + 0.5) / n) * total, behavior: reduced ? "auto" : "smooth" });
+      return true;
+    },
+    [n, driven, reduced],
+  );
 
   const goTo = useCallback(
     (i: number) => {
       const next = (i + n) % n;
-      ownedRef.current = true;
-      setOwned(true);
       const d: 1 | -1 = next >= currentRef.current ? 1 : -1;
       dirRef.current = d;
       setDir(d);
       currentRef.current = next;
       setIndex(next);
+      // While scroll owns the carousel, a click moves the PAGE to that band
+      // rather than fighting it: the engine then reports the index change back.
+      // When the pin is not available (reduced motion) the index is the only
+      // source of truth, and goTo has already set it.
+      scrollToIndex(next);
       setSeen((s) => new Set([...s, next, (next + 1) % n, (next - 1 + n) % n]));
     },
-    [n],
+    [n, scrollToIndex],
   );
   const prev = () => goTo(index - 1);
   const next = () => goTo(index + 1);
@@ -128,7 +144,7 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
       const raw = Math.min(n - 0.0001, Math.max(0, p) * n);
       const i = Math.floor(raw);
       const target = p > 0.985 ? n - 1 : i;
-      if (target !== currentRef.current && !ownedRef.current) {
+      if (target !== currentRef.current) {
         const d: 1 | -1 = target > currentRef.current ? 1 : -1;
         dirRef.current = d;
         setDir(d);
@@ -169,7 +185,7 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
         scene.current = node;
         sceneRef.current = node;
       }}
-      className={cn("scene relative", driven && "h-[calc(var(--n) * 62vh + 20vh)]")}
+      className={cn("scene relative", driven && "h-[calc(var(--n)*72vh+10vh)] lg:h-[calc(var(--n)*90vh+10vh)]")}
       style={{ ["--n" as string]: n }}
     >
       <div className={cn(driven && "sticky top-0 flex h-[100svh] items-center overflow-hidden")}>
@@ -180,7 +196,7 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
       tabIndex={0}
       onKeyDown={onKey}
       className="relative w-full outline-none focus-visible:ring-2 focus-visible:ring-clay focus-visible:ring-offset-4 focus-visible:ring-offset-sand"
-      data-scroll-driven={driven && !owned ? "" : undefined}
+      data-scroll-driven={driven ? "" : undefined}
     >
       <p className="sr-only" aria-live="polite">{announce}</p>
 
@@ -199,8 +215,9 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
             onTouchEnd={onTouchEnd}
             className={cn(
               "relative aspect-[4/5] cursor-grab select-none overflow-hidden rounded-[6px] bg-dune active:cursor-grabbing sm:aspect-[16/11] lg:aspect-[16/10.5]",
-              // once pinned the stage must fit the screen with the copy beside it
-              driven && "lg:max-h-[62svh] lg:w-auto",
+              // the pinned stage must fit the screen beside / above the copy at
+              // every width, so it can never overflow the pinned viewport
+              driven && "max-h-[46svh] lg:max-h-[62svh] lg:w-auto",
               // wide: scroll owns the vertical axis, so a touch may not pan the page here
               driven ? "touch-none" : "touch-pan-y",
             )}
@@ -272,7 +289,7 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
         {/* ── copy + controls ── */}
         <div className="relative z-20 flex flex-col lg:col-span-4 lg:row-start-1">
           <p className="font-serif leading-none text-ink">
-            <span className="text-[5.5rem] italic lg:text-[8vw]">{pad(index + 1)}</span>
+            <span className="text-[3.4rem] italic lg:text-[8vw]">{pad(index + 1)}</span>
             <span className="ml-2 text-2xl text-stone">/ {pad(n)}</span>
           </p>
           <h3 className="mt-4 overflow-clip lg:-mr-[30%]">
@@ -281,16 +298,16 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
             </span>
           </h3>
           <p key={slide.id + "sf"} className="soft-in serif-accent text-3xl text-stone lg:text-[2.6vw]">{slide.serif}</p>
-          <p key={slide.id + "b"} className="soft-in mt-6 max-w-sm text-[15px] leading-[1.6] text-stone" style={{ ["--d" as string]: "80ms" }}>
+          <p key={slide.id + "b"} className="soft-in mt-6 max-w-sm text-[15px] leading-[1.6] text-stone max-lg:hidden" style={{ ["--d" as string]: "80ms" }}>
             {slide.blurb}
           </p>
-          <ul key={slide.id + "t"} className="soft-in mt-5 flex flex-wrap gap-2" style={{ ["--d" as string]: "140ms" }}>
+          <ul key={slide.id + "t"} className="soft-in mt-5 flex flex-wrap gap-2 max-lg:hidden" style={{ ["--d" as string]: "140ms" }}>
             {slide.examples.map((x) => (
               <li key={x} className="caption rounded-full border border-ink/15 px-3 py-1 text-ink/80">{x}</li>
             ))}
           </ul>
 
-          <div className="mt-10 flex items-center gap-3 lg:mt-auto">
+          <div className="mt-6 flex items-center gap-3 lg:mt-auto lg:mt-10">
             <button
               type="button"
               onClick={prev}

@@ -268,8 +268,8 @@ const COMMUNITY_SHOTS: Array<{ key: CommunityStep["key"]; name: ShotName; alt: s
   },
   {
     key: "communities",
-    name: "feed",
-    alt: "Campus+ communities feed, showing the discussion composer, GIF and file attachments, and the channels to follow.",
+    name: "communities",
+    alt: "Campus+ communities screen, with filters for communities and study groups, a search field, and the created communities listed below.",
   },
   {
     key: "discussions",

@@ -16,7 +16,7 @@
 import { useState } from "react";
 import { cn } from "@/utils/cn";
 
-export type ShotName = "home-dark" | "home-light" | "feed" | "clubs" | "events" | "composer";
+export type ShotName = "home-dark" | "home-light" | "feed" | "clubs" | "events" | "composer" | "communities";
 
 const SIZES = "(min-width: 1024px) 360px, 62vw";
 

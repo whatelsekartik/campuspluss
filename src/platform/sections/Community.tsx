@@ -30,8 +30,9 @@ function CommunityIntro() {
   return (
     <div ref={ref} className="scene relative overflow-clip pb-4 pt-28 lg:pb-0 lg:pt-36">
       <div className="mx-auto max-w-[1680px] px-5 sm:px-6 lg:px-10">
-        <p className="eyebrow text-ivory/60" data-reveal>
-          <span className="text-ivory">(04)</span> Community
+        <p className="eyebrow text-ivory/60">
+          <span className="numeral text-ivory" style={{ ["--ns" as string]: "0.02" }}>(04)</span> Community
+          <span className="rule mt-3 block h-px w-10 bg-ivory/25" />
         </p>
       </div>
       <h2 id="community-title" className="relative z-10 mt-6 select-none">

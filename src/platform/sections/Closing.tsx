@@ -2,6 +2,7 @@ import { useScrollProgress } from "../motion/scroll";
 import { CinematicPhoto } from "../components/CinematicPhoto";
 import { PhoneFrame } from "../components/DeviceFrames";
 import { HomeScreenLight } from "../components/AppScreens";
+import { ScrubText } from "../components/ScrubText";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { Wordmark } from "../components/BrandMark";
 import { Icon } from "../components/Icon";
@@ -19,18 +20,21 @@ export function Closing() {
     <section id="start" ref={ref} aria-labelledby="closing-title" className="scene relative overflow-clip bg-ivory outline-none">
       {/* ── ivory statement ── */}
       <div className="relative mx-auto max-w-[1680px] px-5 pb-[26vw] pt-28 sm:px-6 lg:px-10 lg:pb-[18vw] lg:pt-40">
-        <p className="eyebrow text-stone" data-reveal>
-          <span className="text-ink">(07)</span> Get started
+        <p className="eyebrow text-stone">
+          <span className="numeral text-ink" style={{ ["--ns" as string]: "0.03" }}>(07)</span> Get started
+          <span className="rule mt-3 block h-px w-10 bg-ink/30" />
         </p>
-        <h2 id="closing-title" className="display relative z-10 mt-8 text-[18vw] lg:text-[11.6vw]" data-reveal-group>
-          {/* as in the opening, the two lines travel in opposite directions */}
+        <h2 id="closing-title" className="display relative z-10 mt-8 text-[18vw] lg:text-[11.6vw]">
+          {/* as in the opening, the two lines travel in opposite directions,
+              and their letters settle out of the line as the statement arrives */}
           <span className="px block" style={{ ["--sx" as string]: "-7vw" }}>
-            <span className="line-mask"><span>Make your</span></span>
+            <span className="line-mask"><span><ScrubText start={0.05} turn={6}>Make your</ScrubText></span></span>
           </span>
           <span className="px block" style={{ ["--sx" as string]: "5vw" }}>
             <span className="line-mask">
-              <span style={{ ["--rd" as string]: "100ms" }}>
-                campus <span className="serif-accent">yours.</span>
+              <span>
+                <ScrubText start={0.12}>campus</ScrubText>{" "}
+                <span className="serif-accent"><ScrubText start={0.17} turn={-7}>yours.</ScrubText></span>
               </span>
             </span>
           </span>
@@ -76,7 +80,7 @@ export function Closing() {
           data-sheen
         />
 
-        <div className="relative z-10 mt-12 flex flex-col gap-8 lg:mt-16 lg:flex-row lg:items-end lg:justify-between">
+        <div className="drift relative z-10 mt-12 flex flex-col gap-8 lg:mt-16 lg:flex-row lg:items-end lg:justify-between" style={{ ["--dy" as string]: "-58px" }}>
           <p className="max-w-md text-[15px] leading-[1.6] text-stone" data-reveal>
             Sign in to see your timetable, follow clubs and use the marketplace. Or just open the public timetable, no account
             needed.

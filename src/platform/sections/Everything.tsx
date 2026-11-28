@@ -87,7 +87,7 @@ export function Everything() {
           {/* closing statement, unmasked from below */}
           <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-ivory">
             <p className="eyebrow mb-6" style={{ opacity: "calc(var(--s) * 0.8)" }}>
-              (02) How it works
+              <span className="numeral">(02)</span> How it works
             </p>
             <p
               className="display rm-static text-[19vw] will-change-transform lg:text-[12vw]"

@@ -21,11 +21,13 @@ import { onPointerFrame, pointer } from "../motion/pointer";
 
 const FINE_POINTER = "(hover: hover) and (pointer: fine)";
 
-const MAX_LENGTH = 86; // px of visible stroke
-const LIFE = 470; // ms before a point has faded completely
-const FOLLOW_TAU = 44; // ms, lag of the pencil tip behind the pointer
-const MIN_STEP = 1.4; // px the tip must travel before a point is recorded
-const MAX_STEP = 5; // px between recorded points (longer moves are subdivided)
+const MAX_LENGTH = 190; // px of visible stroke
+const LIFE = 780; // ms before a point has faded completely
+const FOLLOW_TAU = 58; // ms, lag of the pencil tip behind the pointer
+const MIN_STEP = 1.2; // px the tip must travel before a point is recorded
+const MAX_STEP = 4.5; // px between recorded points (longer moves are subdivided)
+/** Pressure: slow drags bite deeper into the paper, fast flicks skip across it. */
+const SPEED_TO_PRESSURE = 0.9;
 
 type Point = { x: number; y: number; t: number; g: number };
 
@@ -62,6 +64,7 @@ export function CursorTrail() {
     let lift = 0;
     let press = 0;
     let ring = 0;
+    let weight = 0.7; // how hard the pencil is leaning, 0..1
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -89,6 +92,10 @@ export function CursorTrail() {
       press += ((pointer.down ? 1 : 0) - press) * 0.16;
       ring += ((mode === "link" || mode === "drag" ? 1 : 0) - ring) * 0.12;
 
+      // a fast pointer lifts the nib; a slow one digs in
+      const targetWeight = 1 - Math.min(1, pointer.speed / SPEED_TO_PRESSURE);
+      weight += (targetWeight - weight) * 0.09;
+
       const n = points.length;
       if (n >= 3) {
         let x0 = Infinity;
@@ -98,8 +105,10 @@ export function CursorTrail() {
         // warm graphite, inverted on dark surfaces; clay undertone for grain
         const ink = onDark ? "236,226,208" : "46,40,34";
         const grain = onDark ? "214,168,138" : "150,88,58";
-        // a lifted pencil is softer and wider
-        ctx.filter = lift > 0.06 ? `blur(${(lift * 1.1).toFixed(2)}px)` : "none";
+        // a lifted pencil is softer and wider: drawing a wide, faint under-stroke
+        // reads the same as a blur but avoids a filtered repaint of the whole
+        // path every frame (the stroke is long, so the filter pass was not cheap)
+        const softPass = lift > 0.06;
 
         for (let i = 1; i < n - 1; i++) {
           const a = points[i - 1];
@@ -107,10 +116,18 @@ export function CursorTrail() {
           const c = points[i + 1];
           const u = i / (n - 1); // 0 tail → 1 tip
           const fresh = 1 - Math.min(1, (now - b.t) / LIFE);
+          // Pressure and grain are separate axes: pressure changes width, grain
+          // changes only the edges. (Modulating opacity by grain — the obvious
+          // implementation — makes alternating segments disappear and the stroke
+          // reads as a dashed line. It has to stay continuous.)
+          const pressure = 0.34 + 0.66 * weight;
+          const taper = Math.pow(u, 0.6) * (0.7 + 0.3 * Math.pow(1 - u * 0.12, 2));
           const alpha =
-            Math.pow(u, 1.35) * Math.pow(fresh, 0.6) * (0.42 + 0.22 * b.g) * (lift > 0.06 ? 0.72 : 1);
+            taper * Math.pow(fresh, 0.5) * (0.8 + 0.25 * b.g) * pressure * (lift > 0.06 ? 0.78 : 1);
           if (alpha < 0.004) continue;
-          const width = (0.38 + 1.3 * Math.pow(u, 0.85) * (0.78 + 0.44 * b.g)) * nib + press * 0.25;
+          const width =
+            (0.9 + 2.6 * Math.pow(u, 0.7) * (0.9 + 0.2 * b.g)) * nib * (0.62 + 0.5 * weight) +
+            press * 0.35;
 
           const mx0 = (a.x + b.x) / 2;
           const my0 = (a.y + b.y) / 2;
@@ -119,22 +136,30 @@ export function CursorTrail() {
           ctx.beginPath();
           ctx.moveTo(mx0, my0);
           ctx.quadraticCurveTo(b.x, b.y, mx1, my1);
+          if (softPass) {
+            // the pad of the pencil: no graphite in the middle, a soft edge around it
+            ctx.strokeStyle = `rgba(${ink},${(alpha * 0.3 * lift).toFixed(3)})`;
+            ctx.lineWidth = width + 2.4 + lift * 2.2;
+            ctx.stroke();
+          }
           ctx.strokeStyle = `rgba(${ink},${alpha.toFixed(3)})`;
           ctx.lineWidth = width;
           ctx.stroke();
 
-          if (b.g > 0.35) {
+          // A single hairline a hair off the body where the grain peaks. Any
+          // larger offset reads as a second, parallel line rather than a fibre.
+          if (b.g > 0.45) {
             const dx = c.x - a.x;
             const dy = c.y - a.y;
             const len = Math.hypot(dx, dy) || 1;
-            const off = (b.g - 0.65) * 1.5;
+            const off = (b.g - 0.6) * 0.55;
             const ox = (-dy / len) * off;
             const oy = (dx / len) * off;
             ctx.beginPath();
             ctx.moveTo(mx0 + ox, my0 + oy);
             ctx.quadraticCurveTo(b.x + ox, b.y + oy, mx1 + ox, my1 + oy);
             ctx.strokeStyle = `rgba(${grain},${(alpha * 0.5).toFixed(3)})`;
-            ctx.lineWidth = width * 0.5;
+            ctx.lineWidth = Math.max(0.35, width * 0.35);
             ctx.stroke();
           }
 
@@ -151,7 +176,6 @@ export function CursorTrail() {
           if (a.x > x1) x1 = a.x;
           if (a.y > y1) y1 = a.y;
         }
-        ctx.filter = "none";
         if (x1 >= x0) box = [x0, y0, x1, y1];
       }
 

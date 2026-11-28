@@ -3,6 +3,7 @@ import { CinematicPhoto } from "../components/CinematicPhoto";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { Icon, type IconName } from "../components/Icon";
 import { IMG } from "../data";
+import { ScrubText } from "../components/ScrubText";
 
 /* Small UI fragments that echo Campus+ cards (demonstration content). */
 function Fragment({ icon, kicker, title, meta }: { icon: IconName; kicker: string; title: string; meta: string }) {
@@ -278,12 +279,15 @@ export function Utilities() {
     <section id="utilities" aria-labelledby="utilities-title" className="relative overflow-clip bg-ivory pb-24 pt-28 outline-none lg:pt-40">
       <div className="mx-auto max-w-[1680px] px-5 sm:px-6 lg:px-10">
         <div className="grid gap-6 lg:grid-cols-12">
-          <p className="eyebrow text-stone lg:col-span-3" data-reveal>
-            <span className="text-ink">(06)</span> Campus utilities
+          <p className="eyebrow text-stone lg:col-span-3">
+            <span className="numeral text-ink" style={{ ["--ns" as string]: "0.02" }}>(06)</span> Campus utilities
+            <span className="rule mt-3 block h-px w-10 bg-ink/30" />
           </p>
-          <h2 id="utilities-title" className="display text-[17vw] lg:col-span-9 lg:text-[10vw]" data-reveal-group>
-            <span className="line-mask"><span>More happens</span></span>
-            <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "100ms" }}>here.</span></span>
+          <h2 id="utilities-title" className="display text-[17vw] lg:col-span-9 lg:text-[10vw]">
+            <span className="line-mask"><span><ScrubText start={0.04} turn={5}>More happens</ScrubText></span></span>
+            <span className="line-mask">
+              <span><span className="serif-accent"><ScrubText start={0.14} turn={-6}>here.</ScrubText></span></span>
+            </span>
           </h2>
         </div>
 

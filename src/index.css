@@ -93,17 +93,27 @@
 }
 
 /* ───────────────────────── Reveal (IntersectionObserver driven) ───────────────────────── */
+/* The reveal owns `translate` / `scale` / `rotate` (independent transform
+   properties, applied after `transform`), so an element can also carry a
+   scroll-driven `transform` — .drift, .px, .creep — without either one
+   overwriting the other. */
 [data-reveal] {
   opacity: 0;
-  transform: translate3d(var(--rx, 0), var(--ry, 48px), 0) scale(var(--rsc, 1)) rotate(var(--rr, 0deg));
+  translate: var(--rx, 0) var(--ry, 48px);
+  scale: var(--rsc, 1);
+  rotate: var(--rr, 0deg);
   transition:
     opacity 1s var(--ease-editorial),
-    transform 1.2s var(--ease-editorial);
+    translate 1.2s var(--ease-editorial),
+    scale 1.2s var(--ease-editorial),
+    rotate 1.2s var(--ease-editorial);
   transition-delay: var(--rd, 0ms);
 }
 [data-reveal][data-in] {
   opacity: 1;
-  transform: none;
+  translate: 0 0;
+  scale: 1;
+  rotate: 0deg;
 }
 /* Mask reveal: the element is unveiled bottom-up while its content rises into place.
    The observed element is the unclipped parent ([data-reveal-group]) — a fully
@@ -169,6 +179,68 @@
     calc((var(--p) - 0.5) * var(--sy, 0px) * var(--k)),
     0
   );
+}
+
+/* ───────────────────────── Scroll text & tracks ─────────────────────────
+   Three small, composable pieces driven by the same --p the engine already
+   writes. Nothing here adds a listener, a loop or a React render.
+
+   .scrub       headline letters rise out of their own clip as the scene passes
+   .drift       an element floats at its own rate, in px, scaled by --k
+   .rule        a hairline that draws itself from the left as the scene arrives
+   .numeral     a section number that slides + fades on its own track            */
+
+/* Letters: each glyph is its own box that rises and turns into place.
+   `line-height: inherit` + `vertical-align: baseline` keep the glyph's box
+   exactly as tall as the parent's strut, so the line box does not grow — the
+   headings keep the display metrics they have without this. No `will-change`
+   here: 74 permanent layers would be worse than the motion is worth. */
+.scrub {
+  --sg: clamp(0, calc((var(--p) - var(--ss, 0.06)) / 0.4), 1);
+}
+.scrub-g {
+  display: inline-block;
+  line-height: inherit;
+  vertical-align: baseline;
+  transform-origin: 50% 92%;
+  transform:
+    translate3d(0, calc((1 - var(--sg, 0)) * 0.26em), 0)
+    rotate(calc((1 - var(--sg, 0)) * var(--sr, 5deg)))
+    scale(calc(0.93 + var(--sg, 0) * 0.07));
+  /* starts legible, not invisible: this is a settle, not an entrance */
+  opacity: calc(0.34 + var(--sg, 0) * 0.66);
+  transition: none;
+}
+
+/* A free-floating plane. Distance is in px so it reads the same at any size. */
+.drift {
+  transform: translate3d(
+    calc((var(--p) - 0.5) * var(--dx, 0px) * var(--k)),
+    calc((var(--p) - 0.5) * var(--dy, 0px) * var(--k)),
+    0
+  );
+}
+
+/* Hairline that draws in from one end as the scene settles. */
+.rule {
+  --rg: clamp(0, calc((var(--p) - var(--rs, 0.02)) / 0.3), 1);
+  transform: scaleX(var(--rg));
+  transform-origin: var(--ro, left center);
+}
+
+/* Numerals slide out from under their own line and lift on their own track. */
+.numeral {
+  --ng: clamp(0, calc((var(--p) - var(--ns, 0.02)) / 0.34), 1);
+  display: inline-block;
+  transform: translate3d(0, calc((1 - var(--ng)) * 0.5em), 0);
+  opacity: calc(0.05 + var(--ng) * 0.95);
+}
+
+/* A photograph that keeps a slow, continuous push while its scene is alive —
+   separate from .cine-cam (reveal) so the two never write the same transform. */
+.creep {
+  transform: scale(calc(1.02 + var(--p) * var(--cz, 0.06)))
+    translate3d(calc(var(--p) * var(--cx, 0px)), calc(var(--p) * var(--cy, 0px)), 0);
 }
 
 /* ───────────────────────── Cinematic photo engine ─────────────────────────
@@ -623,6 +695,24 @@
   }
 }
 
+/* ── Numerals: the section index leans and warms on hover ── */
+.numeral {
+  transition: color 0.4s var(--ease-editorial), letter-spacing 0.5s var(--ease-editorial);
+  cursor: default;
+}
+.numeral:hover {
+  letter-spacing: 0.06em;
+  color: var(--color-clay);
+}
+
+/* ── Eyebrows: the hairline under a section label warms and grows on hover.
+      Only colour and width change — the scroll-driven scaleX is untouched. ── */
+.eyebrow:hover .rule {
+  background-color: var(--color-clay);
+  width: 2.75rem;
+  transition: width 0.55s var(--ease-editorial), background-color 0.4s var(--ease-editorial);
+}
+
 /* Coarse pointers get no custom affordances at all. */
 @media (pointer: coarse) {
   [data-tilt],
@@ -648,6 +738,19 @@
   .line-mask > span {
     opacity: 1 !important;
     transform: none !important;
+    translate: none !important;
+    scale: none !important;
+    rotate: none !important;
+  }
+  /* scroll-driven helpers: final state, no motion */
+  .scrub-g,
+  .drift,
+  .rule,
+  .numeral,
+  .creep {
+    transform: none !important;
+    opacity: 1 !important;
+    will-change: auto !important;
   }
   .px,
   .rm-static {

@@ -202,3 +202,52 @@ export function useScrollProgress<T extends HTMLElement>(
 
   return ref;
 }
+
+/** Sentinel element ids the engine can watch without a React ref. */
+/**
+ * Page-level progress, 0..1, published to `:root` as `--pg`.
+ *
+ * Runs inside the same rAF frame as every scene — this is not a second loop,
+ * it just adds one more value to the write phase. Registered lazily by whatever
+ * component wants it (the nav), and torn down with that component.
+ */
+let pageBound = false;
+let pageMounted = 0;
+
+function writePageProgress() {
+  const doc = document.documentElement;
+  const max = doc.scrollHeight - window.innerHeight;
+  const y = window.scrollY || doc.scrollTop || 0;
+  const pg = max > 0 ? clamp(y / max) : 0;
+  doc.style.setProperty("--pg", pg.toFixed(4));
+  // how far the page has moved in the first viewport-height of travel: 0 at the
+  // very top, 1 once you are a screen down. Drives the bar's compaction.
+  const head = clamp(y / Math.max(1, window.innerHeight * 0.6));
+  doc.style.setProperty("--pgHead", head.toFixed(4));
+}
+
+export function usePageProgress() {
+  useEffect(() => {
+    pageMounted++;
+    if (!pageBound) {
+      pageBound = true;
+      const onScroll = () => {
+        writePageProgress();
+        // the scene loop may be idle when nothing is animating, so page progress
+        // is written directly on the (already passive) scroll event
+      };
+      writePageProgress();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll, { passive: true });
+      ensureListening();
+    }
+    return () => {
+      pageMounted--;
+      if (pageMounted <= 0 && pageBound) {
+        pageBound = false;
+        document.documentElement.style.removeProperty("--pg");
+        document.documentElement.style.removeProperty("--pgHead");
+      }
+    };
+  }, []);
+}

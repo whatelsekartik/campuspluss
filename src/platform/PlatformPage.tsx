@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { ShowcaseNav } from "./components/ShowcaseNav";
 import { CursorTrail } from "./components/CursorTrail";
+import { PointerLayer } from "./components/PointerLayer";
 import { TourHud } from "./components/TourHud";
 import { Hero } from "./sections/Hero";
 import { Everything } from "./sections/Everything";
@@ -41,6 +42,7 @@ export default function PlatformPage() {
   return (
     <div data-platform className="bg-ivory text-ink">
       <ShowcaseNav />
+      <PointerLayer />
       <CursorTrail />
       <TourHud />
       <main id="main">

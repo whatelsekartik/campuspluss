@@ -22,7 +22,7 @@ export function Marketplace() {
         sceneRef.current = node;
       }}
       aria-labelledby="market-title"
-      className="scene relative overflow-clip rounded-t-[28px] bg-sand pb-32 pt-28 outline-none lg:rounded-t-[56px] lg:pb-44 lg:pt-36"
+      className="scene relative rounded-t-[28px] bg-sand pb-32 pt-28 outline-none lg:rounded-t-[56px] lg:pb-44 lg:pt-36"
     >
       <div className="mx-auto max-w-[1680px] px-5 sm:px-6 lg:px-10">
         <div className="grid gap-6 lg:grid-cols-12">
@@ -51,9 +51,10 @@ export function Marketplace() {
           </p>
         </div>
 
-        <div className="creep mt-16 min-h-[640px] lg:mt-24" style={{ ["--cz" as string]: "0.03", ["--cy" as string]: "-18px" }}>
-          {near && <EditorialCarousel slides={MARKET} />}
-        </div>
+        {/* no .creep here: a transform on the wrapper would scale the carousel
+            while it is pinned, and `overflow-clip` on the section would stop it
+            sticking at all */}
+        <div className="mt-16 lg:mt-24">{near && <EditorialCarousel slides={MARKET} />}</div>
       </div>
     </section>
   );

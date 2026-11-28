@@ -4,7 +4,7 @@ import { Photo } from "./Photo";
 import { Icon } from "./Icon";
 import type { MarketCategory } from "../data";
 import { useScrollProgress } from "../motion/scroll";
-import { usePrefersReducedMotion } from "../motion/reveal";
+import { usePrefersReducedMotion, useWideViewport } from "../motion/reveal";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -14,10 +14,13 @@ const pad = (n: number) => String(n).padStart(2, "0");
  * - Pointer (touch + mouse) drag with threshold and live drag offset
  * - Arrow keys / Home / End when the region has focus
  * - Only the current and adjacent slides request images
- * - Motion: every photograph sits on its own "camera" that travels slower than
- *   its slide (--i / --pos, pure CSS) and settles from a slight zoom when it
- *   becomes active; the secondary prints are laid down with a rotational settle;
- *   the stage itself opens with scroll through the shared engine.
+ * - Scroll drives it: the whole thing pins and each category holds the screen
+ *   for a viewport of scroll, so scrolling forward advances Books →
+ *   Electronics → Furniture. Clicks, drag and keys still jump directly.
+ * - Motion: every photograph travels from its OWN edge into its resting place,
+ *   as the Community tiles do — the incoming shot slides in from the side
+ *   scroll is heading, the outgoing one is carried out the opposite side, and
+ *   both keep their own camera drift so nothing moves as one slab.
  */
 export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
   const [index, setIndex] = useState(0);
@@ -27,11 +30,32 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const n = slides.length;
   const reduced = usePrefersReducedMotion();
-  const sceneRef = useScrollProgress<HTMLDivElement>("pass", undefined, !reduced);
+
+  const wide = useWideViewport();
+  /** scroll drives the carousel on wide viewports, where there is room for a pinned scene */
+  const driven = wide && !reduced;
+  /** the reader has clicked / dragged: stop rewriting the index from scroll */
+  const [owned, setOwned] = useState(false);
+  /** fractional position in slides (0 → n), written by the scroll scene */
+  const [sp, setSp] = useState(0);
+  /** travel direction, so every shot enters from the side scroll is heading */
+  const [dir, setDir] = useState<1 | -1>(1);
+
+  const currentRef = useRef(0);
+  const dirRef = useRef<1 | -1>(1);
+  const ownedRef = useRef(false);
+  /** last touch gesture on the stage, so a vertical page scroll is not hijacked */
+  const touch = useRef<{ x: number; y: number; horizontal: boolean | null } | null>(null);
 
   const goTo = useCallback(
     (i: number) => {
       const next = (i + n) % n;
+      ownedRef.current = true;
+      setOwned(true);
+      const d: 1 | -1 = next >= currentRef.current ? 1 : -1;
+      dirRef.current = d;
+      setDir(d);
+      currentRef.current = next;
       setIndex(next);
       setSeen((s) => new Set([...s, next, (next + 1) % n, (next - 1 + n) % n]));
     },
@@ -53,6 +77,27 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     start.current = { x: e.clientX, y: e.clientY, id: e.pointerId, locked: null };
   };
+  // A touch that is clearly vertical belongs to the page, not the carousel:
+  // the stage then lets the browser scroll instead of capturing the gesture.
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touch.current = { x: t.clientX, y: t.clientY, horizontal: null };
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    const g = touch.current;
+    if (!g) return;
+    const t = e.touches[0];
+    if (g.horizontal === null) {
+      const dx = Math.abs(t.clientX - g.x);
+      const dy = Math.abs(t.clientY - g.y);
+      if (dx > 8 || dy > 8) g.horizontal = dx > dy;
+    }
+    if (g.horizontal === false) start.current = null;
+    if (g.horizontal === true) e.preventDefault();
+  };
+  const onTouchEnd = () => {
+    touch.current = null;
+  };
   const onPointerMove = (e: React.PointerEvent) => {
     const s = start.current;
     if (!s || s.id !== e.pointerId) return;
@@ -73,10 +118,36 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
     setDrag(0);
   };
 
+  // Scroll drive. The stage sits in a tall scene whose sticky child holds the
+  // screen; progress through it selects the category (the same pattern the
+  // Community sequence uses). Once the reader has taken over, scroll no longer
+  // moves the index — it just keeps feeding the shared engine.
+  const scene = useRef<HTMLDivElement>(null);
+  const onScrollProgress = useCallback(
+    (p: number) => {
+      const raw = Math.min(n - 0.0001, Math.max(0, p) * n);
+      const i = Math.floor(raw);
+      const target = p > 0.985 ? n - 1 : i;
+      if (target !== currentRef.current && !ownedRef.current) {
+        const d: 1 | -1 = target > currentRef.current ? 1 : -1;
+        dirRef.current = d;
+        setDir(d);
+        currentRef.current = target;
+        setIndex(target);
+        setSeen((s) => new Set([...s, target, (target + 1) % n, (target - 1 + n) % n]));
+      }
+      setSp(raw);
+    },
+    [n],
+  );
+  const sceneRef = useScrollProgress<HTMLDivElement>("sticky", onScrollProgress, driven);
+
   // keep transitions snappy but disable them while dragging
   const dragging = drag !== 0;
-  // fractional slide position (index minus drag), consumed by each slide's camera in CSS
-  const pos = index - (dragging ? drag / (stageRef.current?.offsetWidth || 1) : 0);
+  // fractional slide position (index minus drag), consumed by each slide's
+  // camera in CSS. While scrolling it is the continuous value, so a shot is
+  // already travelling out before the index changes.
+  const pos = dragging ? index - drag / (stageRef.current?.offsetWidth || 1) : driven ? sp : index;
   const slide = slides[index];
   const following = slides[(index + 1) % n];
 
@@ -85,6 +156,15 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
   useEffect(() => setAnnounce(`Slide ${index + 1} of ${n}: ${slide.title}`), [index, n, slide.title]);
 
   return (
+    // Tall scene + sticky child on wide viewports: the carousel holds the screen
+    // while scroll walks through the categories. Below `lg` it is a plain block
+    // and the stage swipes.
+    <div
+      ref={scene}
+      className={cn("scene relative", driven && "h-[calc(var(--n) * 62vh + 20vh)]")}
+      style={{ ["--n" as string]: n }}
+    >
+      <div className={cn(driven && "sticky top-0 flex h-[100svh] items-center overflow-hidden")}>
     <div
       ref={sceneRef}
       role="region"
@@ -92,7 +172,8 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
       aria-label="Marketplace categories"
       tabIndex={0}
       onKeyDown={onKey}
-      className="scene relative outline-none focus-visible:ring-2 focus-visible:ring-clay focus-visible:ring-offset-4 focus-visible:ring-offset-sand"
+      className="relative w-full outline-none focus-visible:ring-2 focus-visible:ring-clay focus-visible:ring-offset-4 focus-visible:ring-offset-sand"
+      data-scroll-driven={driven && !owned ? "" : undefined}
     >
       <p className="sr-only" aria-live="polite">{announce}</p>
 
@@ -106,22 +187,30 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
             onPointerMove={onPointerMove}
             onPointerUp={endDrag}
             onPointerCancel={endDrag}
-            className="relative aspect-[4/5] cursor-grab touch-pan-y select-none overflow-hidden rounded-[6px] bg-dune active:cursor-grabbing sm:aspect-[16/11] lg:aspect-[16/10.5]"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            className={cn(
+              "relative aspect-[4/5] cursor-grab select-none overflow-hidden rounded-[6px] bg-dune active:cursor-grabbing sm:aspect-[16/11] lg:aspect-[16/10.5]",
+              // once pinned the stage must fit the screen with the copy beside it
+              driven && "lg:max-h-[62svh] lg:w-auto",
+              // wide: scroll owns the vertical axis, so a touch may not pan the page here
+              driven ? "touch-none" : "touch-pan-y",
+            )}
             style={{
               // the stage opens up as the carousel scrolls into view
               ["--r" as string]: "clamp(0, calc((var(--p) - 0.05) / 0.25), 1)",
               clipPath: "inset(calc((1 - var(--r)) * 9%) calc((1 - var(--r)) * 5%) round 6px)",
             }}
           >
-            <div
-              className={cn("flex h-full", dragging ? "car-drag" : "transition-transform duration-[900ms] ease-[var(--ease-editorial)]")}
-              style={{ transform: `translate3d(calc(${-index * 100}% + ${drag}px), 0, 0)`, ["--pos" as string]: pos }}
-            >
+            <div className={cn("relative h-full", dragging && "car-drag")} style={{ ["--pos" as string]: pos }}>
               {slides.map((s, i) => (
                 <div
                   key={s.id}
-                  className="relative h-full w-full shrink-0 overflow-hidden"
-                  style={{ ["--i" as string]: i }}
+                  // --d is this shot's distance from the live position, so each
+                  // one travels from its own edge rather than riding a strip
+                  className="car-slide absolute inset-0 h-full w-full overflow-hidden"
+                  style={{ ["--i" as string]: i, ["--d" as string]: i - pos, ["--dir" as string]: dir }}
                   data-active={i === index ? "" : undefined}
                   role="group"
                   aria-roledescription="slide"
@@ -154,17 +243,18 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
             style={{ ["--sy" as string]: "-90px" }}
             aria-hidden="true"
           >
-            <div key={slide.id + "s"} className="relative">
-              {/* prints laid onto the page: each slides in from its own side and rotates into its resting angle */}
+            <div key={slide.id + "s"} className="relative" style={{ ["--dir" as string]: dir }}>
+              {/* prints laid onto the page: each slides in from the side scroll
+                  is heading and rotates into its resting angle */}
               <div
                 className="place shadow-[0_30px_50px_-25px_rgba(52,38,22,.6)]"
-                style={{ ["--rot" as string]: "-4deg", ["--fr0" as string]: "7deg", ["--fx0" as string]: "-46px", ["--fy0" as string]: "54px", ["--d" as string]: "120ms" }}
+                style={{ ["--rot" as string]: "-4deg", ["--fr0" as string]: "7deg", ["--fx0" as string]: "calc(var(--dir, 1) * -46px)", ["--fy0" as string]: "54px", ["--d" as string]: "120ms" }}
               >
                 <Photo img={slide.stack[0]} ratio="4/5" crop={[4, 5]} sizes="18vw" widths={[300, 500]} className="rounded-[4px] ring-[6px] ring-paper" />
               </div>
               <div
                 className="place absolute -right-[38%] -top-[34%] w-[70%] shadow-[0_30px_50px_-25px_rgba(52,38,22,.6)]"
-                style={{ ["--rot" as string]: "5deg", ["--fr0" as string]: "-8deg", ["--fx0" as string]: "52px", ["--fy0" as string]: "-34px", ["--d" as string]: "300ms" }}
+                style={{ ["--rot" as string]: "5deg", ["--fr0" as string]: "-8deg", ["--fx0" as string]: "calc(var(--dir, 1) * 52px)", ["--fy0" as string]: "-34px", ["--d" as string]: "300ms" }}
               >
                 <Photo img={slide.stack[1]} ratio="1/1" crop={[1, 1]} sizes="12vw" widths={[240, 400]} className="rounded-[4px] ring-[6px] ring-paper" />
               </div>
@@ -238,6 +328,8 @@ export function EditorialCarousel({ slides }: { slides: MarketCategory[] }) {
             ))}
           </div>
         </div>
+      </div>
+    </div>
       </div>
     </div>
   );

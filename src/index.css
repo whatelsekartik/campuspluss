@@ -342,21 +342,44 @@
   transform: translate3d(9%, 0, 0) scale(1.16);
 }
 
-/* Carousel shots: the photograph travels slower than its slide, then settles */
+/* Carousel shots slide in from their own edge, the way the Community tiles do.
+   --d is the shot's signed distance from the live position (0 = on screen).
+   With --dir = 1 (scrolling forward) an upcoming shot waits fully off the right
+   edge and a passed one is carried fully off the left; --dir = -1 mirrors it,
+   so the same shot always enters from the side the reader is travelling toward.
+   Distance is *capped* on the far side: a shot three slides away would otherwise
+   be parked 300% away, and sliding it into its 20% drift cell would be a long
+   visible journey instead of an arrival. On a phone --d is 0 or ±1, which is
+   exactly one full-slide travel. */
+.car-slide {
+  --dv: clamp(-1, calc(var(--d, 0) * var(--dir, 1)), 1);
+  transform: translate3d(calc(var(--dv) * 100%), 0, 0);
+  transition: transform 1.15s var(--ease-editorial);
+}
+.car-slide[data-active] {
+  transform: none;
+}
+
+/* The photograph inside is its own camera: slow drift across its frame, and a
+   slight zoom that settles as the shot arrives. Never on the same element as
+   the slide travel, so the two never write the same transform. */
 .car-cam {
   position: absolute;
   inset: 0;
-  transform: translate3d(calc((var(--i) - var(--pos)) * -34%), 0, 0);
-  transition: transform 0.9s var(--ease-editorial);
+  transform: translate3d(calc(clamp(-1, var(--d, 0), 1) * -12%), 0, 0);
+  transition: transform 1.15s var(--ease-editorial);
 }
 .car-zoom {
-  transform: scale(1.18);
-  transition: transform 1.8s var(--ease-editorial);
+  transform: scale(1.16);
+  transition: transform 1.5s var(--ease-editorial);
 }
 [data-active] > .car-cam > .car-zoom {
   transform: none;
 }
-.car-drag .car-cam {
+/* while a finger is dragging, everything follows it directly */
+.car-drag .car-slide,
+.car-drag .car-cam,
+.car-drag .car-zoom {
   transition: none;
 }
 

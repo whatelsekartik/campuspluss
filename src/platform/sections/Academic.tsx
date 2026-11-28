@@ -5,6 +5,7 @@ import { TimetablePreview } from "../components/TimetablePreview";
 import { CinematicPhoto } from "../components/CinematicPhoto";
 import { usePrefersReducedMotion } from "../motion/reveal";
 import { Icon } from "../components/Icon";
+import { ScrubText } from "../components/ScrubText";
 import { IMG, ROUTES } from "../data";
 
 export function Academic() {
@@ -16,8 +17,9 @@ export function Academic() {
     <section id="academic" ref={ref} aria-labelledby="academic-title" className="scene relative overflow-clip bg-beige pb-28 pt-28 outline-none lg:pb-40 lg:pt-36">
       <div className="mx-auto max-w-[1680px] px-5 sm:px-6 lg:px-10">
         <div className="flex items-start justify-between">
-          <p className="eyebrow text-stone" data-reveal>
-            <span className="text-ink">(03)</span> Academic life
+          <p className="eyebrow text-stone">
+            <span className="numeral text-ink" style={{ ["--ns" as string]: "0.03" }}>(03)</span> Academic life
+            <span className="rule mt-3 block h-px w-10 bg-ink/30" />
           </p>
           <p className="caption hidden max-w-[14rem] text-right text-stone sm:block" data-reveal style={{ ["--rd" as string]: "120ms" }}>
             Timetables by division, readable at a glance, on any screen.
@@ -28,14 +30,18 @@ export function Academic() {
           {/* headline column — the type runs into the photo on desktop */}
           <div className="relative z-20 lg:col-span-6 lg:pt-6">
             <h2 id="academic-title" className="display text-[19vw] lg:w-[54vw] lg:text-[10.4vw]" data-reveal-group>
-              <span className="line-mask"><span>Know what’s</span></span>
-              <span className="line-mask"><span className="serif-accent" style={{ ["--rd" as string]: "120ms" }}>next.</span></span>
+              <span className="line-mask"><span><ScrubText start={0.04} turn={5}>Know what’s</ScrubText></span></span>
+              <span className="line-mask">
+                <span>
+                  <span className="serif-accent"><ScrubText start={0.14} turn={-6}>{"\u00a0next."}</ScrubText></span>
+                </span>
+              </span>
             </h2>
             <div className="mt-10 grid max-w-xl gap-8 sm:grid-cols-2 lg:mt-16">
               <p className="text-[15px] leading-[1.6] text-stone" data-reveal>
                 Choose your division and see the day: lectures, labs, rooms and batches, with the next slot highlighted.
               </p>
-              <ul className="caption space-y-3 border-l border-ink/15 pl-5 text-stone" data-reveal style={{ ["--rd" as string]: "120ms" }}>
+              <ul className="drift caption space-y-3 border-l border-ink/15 pl-5 text-stone" data-reveal style={{ ["--rd" as string]: "120ms", ["--dy" as string]: "34px" }}>
                 <li className="scan-row -mx-2 rounded-md px-2 py-1"><span className="text-ink">Divisions</span>, switch in one tap</li>
                 <li className="scan-row -mx-2 rounded-md px-2 py-1"><span className="text-ink">Days</span>, Monday to Saturday</li>
                 <li className="scan-row -mx-2 rounded-md px-2 py-1"><span className="text-ink">Slot details</span>, tap to expand</li>

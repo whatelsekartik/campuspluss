@@ -4,6 +4,7 @@ import { Wordmark } from "./BrandMark";
 import { Icon } from "./Icon";
 import { NAV, ROUTES, SECTION_TO_NAV } from "../data";
 import { usePrefersReducedMotion } from "../motion/reveal";
+import { usePageProgress } from "../motion/scroll";
 
 const SECTION_IDS = Object.keys(SECTION_TO_NAV);
 
@@ -69,6 +70,7 @@ export function useSmoothNav() {
 export function ShowcaseNav() {
   const active = useActiveSection();
   const dark = useDarkUnderNav();
+  usePageProgress();
   const go = useSmoothNav();
   const [open, setOpen] = useState(false);
   const activeNav = SECTION_TO_NAV[active] ?? "";
@@ -131,12 +133,24 @@ export function ShowcaseNav() {
       </a>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b transition-colors duration-500",
-          tone === "light" ? "border-white/10 bg-ink/70 text-ivory" : "border-ink/10 bg-ivory/75 text-ink",
+          "fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow,height] duration-500",
+          tone === "light" ? "border-b border-white/10 bg-ink/70 text-ivory" : "border-b border-ink/10 bg-ivory/75 text-ink",
           "backdrop-blur-md backdrop-saturate-150",
         )}
+        style={{
+          // past the first screen the bar tightens and carries a hairline shadow,
+          // so the page feels like it is travelling under it
+          height: "calc(3.5rem - var(--pgHead, 0) * var(--k) * 0.35rem)",
+          boxShadow: "0 calc(var(--pgHead, 0) * 10px) calc(var(--pgHead, 0) * 30px) -24px rgba(52,38,22,.55)",
+        }}
       >
-        <nav aria-label="Platform" className="mx-auto flex h-14 max-w-[1680px] items-center px-4 sm:px-6 lg:px-10">
+        {/* scroll progress: a single hairline that fills across the bar */}
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-px origin-left bg-current opacity-30"
+          style={{ transform: "scaleX(var(--pg, 0))" }}
+        />
+        <nav aria-label="Platform" className="mx-auto flex h-full max-w-[1680px] items-center px-4 sm:px-6 lg:px-10">
           <a href="#top" onClick={(e) => go(e, "top")} data-magnet="18" className="shrink-0" aria-label="Campus+ platform, back to top">
             <Wordmark tone={tone === "light" ? "light" : "dark"} />
           </a>

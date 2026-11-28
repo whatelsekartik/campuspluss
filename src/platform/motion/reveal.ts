@@ -59,6 +59,25 @@ export function usePrefersReducedMotion() {
 }
 
 /** Mount children only when near the viewport (keeps first paint light). */
+/**
+ * True while the layout is wide enough for the horizontal, scroll-driven
+ * choreography (the same 1024px breakpoint the sections use for `lg:`).
+ * Below it those effects are switched off and the touch affordances take over.
+ */
+export function useWideViewport() {
+  const [wide, setWide] = useState(
+    () => typeof window !== "undefined" && !!window.matchMedia && window.matchMedia("(min-width: 1024px)").matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const on = () => setWide(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return wide;
+}
+
 export function useNearViewport<T extends HTMLElement>(ref: React.RefObject<T | null>, margin = "600px") {
   const [near, setNear] = useState(false);
   useEffect(() => {

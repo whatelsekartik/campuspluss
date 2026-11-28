@@ -13,6 +13,14 @@ export function Marketplace() {
   // the section now has its own progress: the headline scrubs in, the copy
   // drifts against it, and the stage settles as it arrives
   const sceneRef = useScrollProgress<HTMLElement>("pass", undefined, !reduced);
+// The headline is its own scene. It used to inherit --p from the whole section,
+// but the sections are now several viewports tall (Marketplace contains a pinned
+// carousel; Utilities holds five blocks), so section-level progress was still
+// ~0.002 while the headline was on screen and only reached 1 after the reader
+// had scrolled past everything below it. The letters were left frozen at their
+// start pose: half-raised, dim, and obviously stuck. Measuring the header itself
+// gives it a short, honest travel - it settles as it comes into view.
+  const headRef = useScrollProgress<HTMLDivElement>("enter", undefined, !reduced);
 
   return (
     <section
@@ -25,7 +33,10 @@ export function Marketplace() {
       className="scene relative rounded-t-[28px] bg-sand pb-32 pt-28 outline-none lg:rounded-t-[56px] lg:pb-44 lg:pt-36"
     >
       <div className="mx-auto max-w-[1680px] px-5 sm:px-6 lg:px-10">
-        <div className="grid gap-6 lg:grid-cols-12">
+        <div
+          className="scene grid gap-6 lg:grid-cols-12"
+          ref={headRef}
+        >
           <p className="eyebrow text-stone lg:col-span-3">
             <span className="numeral text-ink" style={{ ["--ns" as string]: "0.04" }}>(05)</span> Marketplace
             <span className="rule mt-3 block h-px w-10 bg-ink/30" />

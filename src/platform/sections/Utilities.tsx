@@ -276,21 +276,20 @@ function Notices() {
 
 export function Utilities() {
   const reduced = usePrefersReducedMotion();
-  // One scene for the section. It does two jobs: the engine writes --p onto this
-  // element (so the headline's letters move, and settle when it has passed), and
-  // every descendant that is NOT its own scene inherits that --p. The blocks
-  // below opt out by declaring .scene on their own root, which re-declares
-  // --p locally — so their own photography keeps its separate progress.
-  const ref = useScrollProgress<HTMLElement>("pass", undefined, !reduced);
+  // The HEADER is the scene, not the section. Registering the section made its
+  // progress span the whole ~500vh of five stacked blocks, so --p was still
+  // ~0.002 when the headline was on screen and the letters never rose out of
+  // their start pose — they looked sliced in half. The header is short, so its
+  // "enter" progress actually tracks what the reader is looking at.
+  const ref = useScrollProgress<HTMLDivElement>("enter", undefined, !reduced);
   return (
     <section
-      ref={ref}
       id="utilities"
       aria-labelledby="utilities-title"
       className="scene relative overflow-clip bg-ivory pb-24 pt-28 outline-none lg:pt-40"
     >
       <div className="mx-auto max-w-[1680px] px-5 sm:px-6 lg:px-10">
-        <div className="grid gap-6 lg:grid-cols-12">
+        <div className="scene grid gap-6 lg:grid-cols-12" ref={ref}>
           <p className="eyebrow text-stone lg:col-span-3">
             <span className="numeral text-ink" style={{ ["--ns" as string]: "0.02" }}>(06)</span> Campus utilities
             <span className="rule mt-3 block h-px w-10 bg-ink/30" />

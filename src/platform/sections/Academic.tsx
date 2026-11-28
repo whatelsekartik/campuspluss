@@ -11,6 +11,14 @@ import { IMG, ROUTES } from "../data";
 export function Academic() {
   const reduced = usePrefersReducedMotion();
   const ref = useScrollProgress<HTMLElement>("pass", undefined, !reduced);
+// The headline is its own scene. It used to inherit --p from the whole section,
+// but the sections are now several viewports tall (Marketplace contains a pinned
+// carousel; Utilities holds five blocks), so section-level progress was still
+// ~0.002 while the headline was on screen and only reached 1 after the reader
+// had scrolled past everything below it. The letters were left frozen at their
+// start pose: half-raised, dim, and obviously stuck. Measuring the header itself
+// gives it a short, honest travel - it settles as it comes into view.
+  const headRef = useScrollProgress<HTMLDivElement>("enter", undefined, !reduced);
   const [divLabel, setDivLabel] = useState("SE · A");
 
   return (
@@ -26,7 +34,7 @@ export function Academic() {
           </p>
         </div>
 
-        <div className="relative mt-10 grid gap-12 lg:mt-14 lg:grid-cols-12 lg:gap-6">
+        <div className="scene relative mt-10 grid gap-12 lg:mt-14 lg:grid-cols-12 lg:gap-6" ref={headRef}>
           {/* headline column — the type runs into the photo on desktop */}
           <div className="relative z-20 lg:col-span-6 lg:pt-6">
             <h2 id="academic-title" className="display text-[19vw] lg:w-[54vw] lg:text-[10.4vw]" data-reveal-group>

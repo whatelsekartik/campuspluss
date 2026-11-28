@@ -14,12 +14,21 @@ export function Closing() {
   const ref = useScrollProgress<HTMLElement>("pass", undefined, !reduced);
   // the footer is its own scene: 0 when its top edge appears, 1 once it has fully arrived
   const footerRef = useScrollProgress<HTMLElement>("enter", undefined, !reduced);
+// The headline is its own scene. It used to inherit --p from the whole section,
+// but the sections are now several viewports tall (Marketplace contains a pinned
+// carousel; Utilities holds five blocks), so section-level progress was still
+// ~0.002 while the headline was on screen and only reached 1 after the reader
+// had scrolled past everything below it. The letters were left frozen at their
+// start pose: half-raised, dim, and obviously stuck. Measuring the header itself
+// gives it a short, honest travel - it settles as it comes into view.
+  const headRef = useScrollProgress<HTMLDivElement>("enter", undefined, !reduced);
   const go = useSmoothNav();
 
   return (
     <section id="start" ref={ref} aria-labelledby="closing-title" className="scene relative overflow-clip bg-ivory outline-none">
       {/* ── ivory statement ── */}
       <div className="relative mx-auto max-w-[1680px] px-5 pb-[26vw] pt-28 sm:px-6 lg:px-10 lg:pb-[18vw] lg:pt-40">
+        <div className="scene" ref={headRef}>
         <p className="eyebrow text-stone">
           <span className="numeral text-ink" style={{ ["--ns" as string]: "0.03" }}>(07)</span> Get started
           <span className="rule mt-3 block h-px w-10 bg-ink/30" />
@@ -39,6 +48,7 @@ export function Closing() {
             </span>
           </span>
         </h2>
+        </div>
 
         {/* the product itself, once more: the light theme, where the page is light */}
         <div className="relative z-10 mx-auto mt-12 w-[min(46vw,220px)] lg:absolute lg:right-[6vw] lg:top-[42vh] lg:mt-0 lg:w-[min(13vw,214px)]">

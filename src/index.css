@@ -148,7 +148,8 @@
   transition-delay: var(--rd, 0ms);
 }
 [data-in] .line-mask > span,
-.line-mask[data-in] > span {
+.line-mask[data-in] > span,
+[data-reveal-group][data-in] .line-mask > span {
   transform: none;
 }
 /* the hero headline is above the fold: let it rise with the page paint */
@@ -195,10 +196,10 @@
    exactly as tall as the parent's strut, so the line box does not grow — the
    headings keep the display metrics they have without this. No `will-change`
    here: 74 permanent layers would be worse than the motion is worth. */
-.scrub {
-  --sg: clamp(0, calc((var(--p) - var(--ss, 0.06)) / 0.4), 1);
-}
 .scrub-g {
+  /* computed per glyph: each letter carries its own --ss, so resolving this on
+     the wrapper would give every letter the same value and kill the stagger */
+  --sg: clamp(0, calc((var(--p) - var(--ss, 0.06)) / 0.4), 1);
   display: inline-block;
   line-height: inherit;
   vertical-align: baseline;

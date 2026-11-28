@@ -3,9 +3,13 @@
  *
  * Each character is a transformed *descendant*, so the line box is exactly the
  * same as plain text: display line-height, wrapping and offsets are untouched
- * (the failure mode that killed the earlier per-glyph kinetic pass). The real
- * string stays in the DOM once, for screen readers and for search, and the
- * glyphs are aria-hidden.
+ * (the failure mode that killed the earlier per-glyph kinetic pass).
+ *
+ * The glyphs carry the real text, so there is no duplicate copy for a screen
+ * reader to read twice — but they are separate boxes, which a reader would
+ * otherwise announce letter by letter. `role="text"` groups them back into a
+ * single string. They are deliberately NOT aria-hidden: hiding them would leave
+ * the headline with no accessible text at all.
  *
  * Motion comes from the scene's --p through the .scrub rules in index.css —
  * no listener, no per-frame React render, and nothing at all under reduced
@@ -38,10 +42,14 @@ export function ScrubText({
   return (
     <span
       className={cn("scrub", className)}
-      style={{ ["--ss" as string]: start, ["--sr" as string]: `${turn}deg` }}
+      // The engine registers this element too, so the run can never be left
+      // settled-and-dim if an ancestor forgets to carry data-reveal-group.
+      data-reveal=""
+      data-in=""
+      role="text"
+      style={{ ["--sr" as string]: `${turn}deg` }}
     >
-      <span className="sr-only">{children}</span>
-      <span aria-hidden="true">
+      <span>
         {chars.map((ch, i) =>
           isSpace(ch) ? (
             " "

@@ -30,7 +30,7 @@ export function Marketplace() {
             <span className="numeral text-ink" style={{ ["--ns" as string]: "0.04" }}>(05)</span> Marketplace
             <span className="rule mt-3 block h-px w-10 bg-ink/30" />
           </p>
-          <h2 id="market-title" className="display text-[15vw] lg:col-span-9 lg:text-[8.6vw]">
+          <h2 id="market-title" className="display text-[15vw] lg:col-span-9 lg:text-[8.6vw]" data-reveal-group>
             <span className="line-mask"><span><ScrubText>Buy, sell,</ScrubText></span></span>
             <span className="line-mask">
               <span>

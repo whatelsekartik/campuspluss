@@ -29,7 +29,7 @@ export function Academic() {
         <div className="relative mt-10 grid gap-12 lg:mt-14 lg:grid-cols-12 lg:gap-6">
           {/* headline column — the type runs into the photo on desktop */}
           <div className="relative z-20 lg:col-span-6 lg:pt-6">
-            <h2 id="academic-title" className="display text-[19vw] lg:w-[54vw] lg:text-[10.4vw]">
+            <h2 id="academic-title" className="display text-[19vw] lg:w-[54vw] lg:text-[10.4vw]" data-reveal-group>
               <span className="line-mask"><span><ScrubText start={0.04} turn={5}>Know what’s</ScrubText></span></span>
               <span className="line-mask">
                 <span>

@@ -24,7 +24,7 @@ export function Closing() {
           <span className="numeral text-ink" style={{ ["--ns" as string]: "0.03" }}>(07)</span> Get started
           <span className="rule mt-3 block h-px w-10 bg-ink/30" />
         </p>
-        <h2 id="closing-title" className="display relative z-10 mt-8 text-[18vw] lg:text-[11.6vw]">
+        <h2 id="closing-title" className="display relative z-10 mt-8 text-[18vw] lg:text-[11.6vw]" data-reveal-group>
           {/* as in the opening, the two lines travel in opposite directions,
               and their letters settle out of the line as the statement arrives */}
           <span className="px block" style={{ ["--sx" as string]: "-7vw" }}>

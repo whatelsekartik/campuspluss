@@ -283,7 +283,7 @@ export function Utilities() {
             <span className="numeral text-ink" style={{ ["--ns" as string]: "0.02" }}>(06)</span> Campus utilities
             <span className="rule mt-3 block h-px w-10 bg-ink/30" />
           </p>
-          <h2 id="utilities-title" className="display text-[17vw] lg:col-span-9 lg:text-[10vw]">
+          <h2 id="utilities-title" className="display text-[17vw] lg:col-span-9 lg:text-[10vw]" data-reveal-group>
             <span className="line-mask"><span><ScrubText start={0.04} turn={5}>More happens</ScrubText></span></span>
             <span className="line-mask">
               <span><span className="serif-accent"><ScrubText start={0.14} turn={-6}>here.</ScrubText></span></span>

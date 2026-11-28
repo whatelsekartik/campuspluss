@@ -191,11 +191,19 @@
    .rule        a hairline that draws itself from the left as the scene arrives
    .numeral     a section number that slides + fades on its own track            */
 
-/* Letters: each glyph is its own box that rises and turns into place.
+/* Letters rise and turn into place. Glyphs are grouped into words because each
+   glyph is an inline-block, and a line of atomic glyphs may break between any
+   two letters — "what" / "s". A word is one unbreakable box, so wrapping
+   happens at spaces exactly as plain text does.
    `line-height: inherit` + `vertical-align: baseline` keep the glyph's box
    exactly as tall as the parent's strut, so the line box does not grow — the
    headings keep the display metrics they have without this. No `will-change`
-   here: 74 permanent layers would be worse than the motion is worth. */
+   here: 69 permanent layers would be worse than the motion is worth. */
+.scrub-w {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .scrub-g {
   /* computed per glyph: each letter carries its own --ss, so resolving this on
      the wrapper would give every letter the same value and kill the stagger */
@@ -203,6 +211,8 @@
   display: inline-block;
   line-height: inherit;
   vertical-align: baseline;
+  /* keep hyphens and en/em dashes from offering a mid-word break */
+  white-space: nowrap;
   transform-origin: 50% 92%;
   transform:
     translate3d(0, calc((1 - var(--sg, 0)) * 0.26em), 0)

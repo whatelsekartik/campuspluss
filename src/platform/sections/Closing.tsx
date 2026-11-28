@@ -33,8 +33,8 @@ export function Closing() {
           <span className="px block" style={{ ["--sx" as string]: "5vw" }}>
             <span className="line-mask">
               <span>
-                <ScrubText start={0.12}>campus</ScrubText>{" "}
-                <span className="serif-accent"><ScrubText start={0.17} turn={-7}>yours.</ScrubText></span>
+                <ScrubText start={0.12}>{"\u00a0campus"}</ScrubText>
+                <span className="serif-accent"><ScrubText start={0.17} turn={-7}>{"\u00a0yours."}</ScrubText></span>
               </span>
             </span>
           </span>

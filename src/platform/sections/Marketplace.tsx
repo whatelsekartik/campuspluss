@@ -34,8 +34,8 @@ export function Marketplace() {
             <span className="line-mask"><span><ScrubText>Buy, sell,</ScrubText></span></span>
             <span className="line-mask">
               <span>
-                <span className="serif-accent"><ScrubText start={0.16}>pass it</ScrubText></span>{" "}
-                <ScrubText start={0.2}>on.</ScrubText>
+                <span className="serif-accent"><ScrubText start={0.16}>{"\u00a0pass it"}</ScrubText></span>
+                <ScrubText start={0.2}>{"\u00a0on."}</ScrubText>
               </span>
             </span>
           </h2>

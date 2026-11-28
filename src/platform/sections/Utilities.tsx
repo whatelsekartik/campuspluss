@@ -286,7 +286,7 @@ export function Utilities() {
           <h2 id="utilities-title" className="display text-[17vw] lg:col-span-9 lg:text-[10vw]" data-reveal-group>
             <span className="line-mask"><span><ScrubText start={0.04} turn={5}>More happens</ScrubText></span></span>
             <span className="line-mask">
-              <span><span className="serif-accent"><ScrubText start={0.14} turn={-6}>here.</ScrubText></span></span>
+              <span><span className="serif-accent"><ScrubText start={0.14} turn={-6}>{"\u00a0here."}</ScrubText></span></span>
             </span>
           </h2>
         </div>

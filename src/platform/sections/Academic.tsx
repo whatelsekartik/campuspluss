@@ -33,7 +33,7 @@ export function Academic() {
               <span className="line-mask"><span><ScrubText start={0.04} turn={5}>Know what’s</ScrubText></span></span>
               <span className="line-mask">
                 <span>
-                  <span className="serif-accent"><ScrubText start={0.14} turn={-6}>next.</ScrubText></span>
+                  <span className="serif-accent"><ScrubText start={0.14} turn={-6}>{"\u00a0next."}</ScrubText></span>
                 </span>
               </span>
             </h2>

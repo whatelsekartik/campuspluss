@@ -38,7 +38,30 @@ export function ScrubText({
   /** --p at which the run starts */
   start?: number;
 }) {
-  const chars = Array.from(children);
+  // Split into words, keeping the whitespace tokens so the text still reads
+  // naturally. Each word becomes one unbreakable box: a glyph on its own is an
+  // inline-block, which lets the browser break a line between any two letters
+  // ("what" / "s") and drops the kerning between them. Grouping glyphs into a
+  // single inline-block word restores normal wrapping — lines break at spaces
+  // only — while every letter still animates on its own.
+  const tokens = children.split(/(\s+)/);
+  let index = 0;
+  const words = tokens
+    .map((token) => {
+      if (!token) return null;
+      if (isSpace(token[0])) {
+        const space = { space: true, key: `s${index}` };
+        index += token.length;
+        return space;
+      }
+      const glyphs = Array.from(token).map((ch) => {
+        const i = index++;
+        return { ch, i };
+      });
+      return { glyphs, key: `w${index}` };
+    })
+    .filter(Boolean) as Array<{ space: true; key: string } | { glyphs: Array<{ ch: string; i: number }>; key: string }>;
+
   return (
     <span
       className={cn("scrub", className)}
@@ -49,21 +72,23 @@ export function ScrubText({
       role="text"
       style={{ ["--sr" as string]: `${turn}deg` }}
     >
-      <span>
-        {chars.map((ch, i) =>
-          isSpace(ch) ? (
-            " "
-          ) : (
-            <span
-              key={i}
-              className="scrub-g"
-              style={{ ["--ss" as string]: (start + i * stagger).toFixed(3) }}
-            >
-              {ch}
-            </span>
-          ),
-        )}
-      </span>
+      {words.map((w) =>
+        "space" in w ? (
+          " "
+        ) : (
+          <span key={w.key} className="scrub-w">
+            {w.glyphs.map(({ ch, i }) => (
+              <span
+                key={i}
+                className="scrub-g"
+                style={{ ["--ss" as string]: (start + i * stagger).toFixed(3) }}
+              >
+                {ch}
+              </span>
+            ))}
+          </span>
+        ),
+      )}
     </span>
   );
 }
